@@ -16,6 +16,7 @@
 #include <unistd.h>
 #include <sys/select.h>
 #include <sys/param.h>
+#include <errno.h>
 
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -63,7 +64,8 @@ int main(int argc, char **argv)
   unsigned char byte;
 
   // Open input
-  int inputfd, res;
+  int outputfd =0;
+  int res;
   char *outputname = argv[1];
   struct termios oldtio,newtio;
 
@@ -72,11 +74,11 @@ int main(int argc, char **argv)
   // check type of input
   if (serialMode) {
     // assume it's a serial port
-    inputfd = open(outputname, O_RDWR | O_NOCTTY);
-    if (inputfd <0) {
+    outputfd = open(outputname, O_RDWR | O_NOCTTY);
+    if (outputfd <0) {
       perror(outputname); exit(-1);
     }
-    tcgetattr(inputfd,&oldtio); // save current port settings
+    tcgetattr(outputfd,&oldtio); // save current port settings
 
     // see "man termios" for details
     memset(&newtio, 0, sizeof(newtio));
@@ -93,45 +95,42 @@ int main(int argc, char **argv)
     // - receive every single char seperately
     newtio.c_cc[VMIN]     = 1;   /* blocking read until 1 chars received */
     // - set new params
-    tcflush(inputfd, TCIFLUSH);
-    tcsetattr(inputfd,TCSANOW,&newtio);
+    tcflush(outputfd, TCIFLUSH);
+    tcsetattr(outputfd,TCSANOW,&newtio);
   }
   else {
-    // assume it's an IP address
-    int sockfd = 0;
-    struct hostent *server;
-    struct sockaddr_in serv_addr;
-    if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+    // assume it's an IP address or hostname
+    struct sockaddr_in conn_addr;
+    if ((outputfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
       printf("Error: Could not create socket\n");
       exit(1);
     }
+    // prepare IP address
+    memset(&conn_addr, '0', sizeof(conn_addr));
+    conn_addr.sin_family = AF_INET;
+    conn_addr.sin_port = htons(PROXYPORT);
+
+    struct hostent *server;
     server = gethostbyname(outputname);
     if (server == NULL) {
       printf("Error: no such host");
       exit(1);
     }
-    memset(&serv_addr, '0', sizeof(serv_addr));
-    serv_addr.sin_family = AF_INET;
-    serv_addr.sin_port = htons(PROXYPORT);
-    memcpy((char *)server->h_addr, (char *)&serv_addr.sin_addr.s_addr, server->h_length);
+    memcpy((char *)&conn_addr.sin_addr.s_addr, (char *)server->h_addr, server->h_length);
 
-//    if (inet_pton(AF_INET, outputname, &serv_addr.sin_addr)<=0) {
-//      printf("\n inet_pton error occured\n");
-//      exit(1);
-//    }
-    if (connect(inputfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
-      printf("Error : Could not connect to %s\n", outputname);
+    if ((res = connect(outputfd, (struct sockaddr *)&conn_addr, sizeof(conn_addr))) < 0) {
+      printf("Error: %s\n", strerror(errno));
       exit(1);
     }
   }
 
 	if (proxyMode) {
 
-    int listenfd = 0, connfd = 0;
+    int listenfd = 0, servingfd = 0;
     struct sockaddr_in serv_addr;
 
     fd_set readfs;    /* file descriptor set */
-    int    maxfd;     /* maximum file descriptor used */
+    int    maxrdfd;     /* maximum file descriptor used */
 
     int n;
 
@@ -150,33 +149,33 @@ int main(int argc, char **argv)
 
     while (TRUE) {
       // accept the connection, open fd
-      connfd = accept(listenfd, (struct sockaddr*)NULL, NULL);
+      servingfd = accept(listenfd, (struct sockaddr*)NULL, NULL);
       // prepare fd observation using select()
-      maxfd = MAX (inputfd, connfd)+1;  /* maximum bit entry (fd) to test */
+      maxrdfd = MAX (outputfd, servingfd)+1;  /* maximum bit entry (fd) to test */
       FD_ZERO(&readfs);
       // wait for getting data from either side now
       while (TRUE) {
-        FD_SET(connfd, &readfs);  /* set testing for source 2 */
-        FD_SET(inputfd, &readfs);  /* set testing for source 1 */
+        FD_SET(servingfd, &readfs);  /* set testing for source 2 */
+        FD_SET(outputfd, &readfs);  /* set testing for source 1 */
         // block until input becomes available
-        select(maxfd, &readfs, NULL, NULL, NULL);
-        if (FD_ISSET(connfd,&readfs)) {
+        select(maxrdfd, &readfs, NULL, NULL, NULL);
+        if (FD_ISSET(servingfd,&readfs)) {
           // input from TCP connection available
-          n = read(connfd, &byte, 1);
-          if (n<0) break; // connection closed
+          n = read(servingfd, &byte, 1);
+          if (n<1) break; // connection closed
           // got a byte, send it
           printf("Transmitting byte : 0x%02X\n", byte);
           // send
-          res = write(inputfd,&byte,1);
+          res = write(outputfd,&byte,1);
         }
-        if (FD_ISSET(inputfd,&readfs)) {
+        if (FD_ISSET(outputfd,&readfs)) {
           // input from serial available
-          res = read(inputfd,&byte,1);   /* returns after 1 chars have been input */
+          res = read(outputfd,&byte,1);   /* returns after 1 chars have been input */
           printf("Received     byte : 0x%02X\n", byte);
-          res = write(connfd,&byte,1);
+          res = write(servingfd,&byte,1);
         }
       }
-      close(connfd);
+      close(servingfd);
       printf("Connection closed, waiting for new connection\n");
     }
 	}
@@ -193,11 +192,11 @@ int main(int argc, char **argv)
       // show
       printf("Transmitting byte : 0x%02X\n",data);
       // send
-      res = write(inputfd,&byte,1);
+      res = write(outputfd,&byte,1);
     }
 
     while (numRespBytes<0 || numRespBytes>0) {       /* loop for input */
-      res = read(inputfd,&byte,1);   /* returns after 1 chars have been input */
+      res = read(outputfd,&byte,1);   /* returns after 1 chars have been input */
       printf("Received     byte : 0x%02X\n",byte);
       numRespBytes--;
     }
@@ -205,11 +204,11 @@ int main(int argc, char **argv)
 
 	// done
 	if (serialMode) {
-	  tcsetattr(inputfd,TCSANOW,&oldtio);
+	  tcsetattr(outputfd,TCSANOW,&oldtio);
 	}
 
 	// close
-	close(inputfd);
+	close(outputfd);
 
 	// return
 	return 0;

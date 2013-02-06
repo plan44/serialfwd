@@ -3,8 +3,8 @@
 
 <cproject>
 <storageModule moduleId="org.eclipse.cdt.core.settings">
-<cconfiguration id="com.digi.lxnetes.managedbuild.debugConfiguration.645916687.1552696755">
-<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="com.digi.lxnetes.managedbuild.debugConfiguration.645916687.1552696755" moduleId="org.eclipse.cdt.core.settings" name="Debug">
+<cconfiguration id="com.digi.lxnetes.managedbuild.debugConfiguration.100236078">
+<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="com.digi.lxnetes.managedbuild.debugConfiguration.100236078" moduleId="org.eclipse.cdt.core.settings" name="Debug">
 <externalSettings/>
 <extensions>
 <extension id="org.eclipse.cdt.core.ELF" point="org.eclipse.cdt.core.BinaryParser"/>
@@ -14,32 +14,31 @@
 <extension id="org.eclipse.cdt.core.GLDErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
 </extensions>
 </storageModule>
-<storageModule moduleId="org.eclipse.cdt.core.language.mapping"/>
 <storageModule moduleId="cdtBuildSystem" version="4.0.0">
-<configuration artifactName="hello_world_c" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.debug,org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe" cleanCommand="rm -rf" description="" id="com.digi.lxnetes.managedbuild.debugConfiguration.645916687.1552696755" name="Debug" parent="com.digi.lxnetes.managedbuild.debugConfiguration">
-<folderInfo id="com.digi.lxnetes.managedbuild.debugConfiguration.645916687.1552696755." name="/" resourcePath="">
-<toolChain id="com.digi.lxnetes.managedbuild.toolChainDebug.1189884802" name="Digi EL Tool Chain" superClass="com.digi.lxnetes.managedbuild.toolChainDebug">
-<targetPlatform id="com.digi.lxnetes.managedbuild.targetPlatform.debug.492971447" name="Debug Platform" superClass="com.digi.lxnetes.managedbuild.targetPlatform.debug"/>
-<builder buildPath="${workspace_loc:/hello_world_c/Debug}" id="com.digi.lxnetes.builder.exe.debug.1067738436" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="Gnu Make Builder" superClass="com.digi.lxnetes.builder.exe.debug"/>
-<tool id="com.digi.lxnetes.managedbuild.archiver.base.13754365" name="GCC C Cross-Archiver" superClass="com.digi.lxnetes.managedbuild.archiver.base"/>
-<tool id="com.digi.lxnetes.managedbuild.c.compiler.debug.1487416509" name="GCC C Cross-Compiler" superClass="com.digi.lxnetes.managedbuild.c.compiler.debug">
-<option defaultValue="gnu.c.optimization.level.none" id="gnu.c.compiler.option.optimization.level.910975861" name="Optimization Level" superClass="gnu.c.compiler.option.optimization.level" valueType="enumerated"/>
-<option id="gnu.c.compiler.option.debugging.level.678419553" name="Debug Level" superClass="gnu.c.compiler.option.debugging.level" value="gnu.c.debugging.level.max" valueType="enumerated"/>
-<inputType id="com.digi.lxnetes.managedbuild.c.compiler.input.199440591" superClass="com.digi.lxnetes.managedbuild.c.compiler.input"/>
+<configuration artifactName="serialfwd" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.debug,org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe" cleanCommand="rm -rf" description="" id="com.digi.lxnetes.managedbuild.debugConfiguration.100236078" name="Debug" parent="com.digi.lxnetes.managedbuild.debugConfiguration">
+<folderInfo id="com.digi.lxnetes.managedbuild.debugConfiguration.100236078." name="/" resourcePath="">
+<toolChain id="com.digi.lxnetes.managedbuild.toolChainDebug.112950810" name="Digi EL Tool Chain" superClass="com.digi.lxnetes.managedbuild.toolChainDebug">
+<targetPlatform id="com.digi.lxnetes.managedbuild.targetPlatform.debug.985702059" name="Debug Platform" superClass="com.digi.lxnetes.managedbuild.targetPlatform.debug"/>
+<builder buildPath="${workspace_loc:/serialfwd/Debug}" id="com.digi.lxnetes.builder.exe.debug.790968753" managedBuildOn="true" name="Gnu Make Builder.Debug" superClass="com.digi.lxnetes.builder.exe.debug"/>
+<tool id="com.digi.lxnetes.managedbuild.archiver.base.894471610" name="GCC C Cross-Archiver" superClass="com.digi.lxnetes.managedbuild.archiver.base"/>
+<tool id="com.digi.lxnetes.managedbuild.c.compiler.debug.1641403664" name="GCC C Cross-Compiler" superClass="com.digi.lxnetes.managedbuild.c.compiler.debug">
+<option defaultValue="gnu.c.optimization.level.none" id="gnu.c.compiler.option.optimization.level.692512744" superClass="gnu.c.compiler.option.optimization.level" valueType="enumerated"/>
+<option id="gnu.c.compiler.option.debugging.level.289091923" superClass="gnu.c.compiler.option.debugging.level" value="gnu.c.debugging.level.max" valueType="enumerated"/>
+<inputType id="com.digi.lxnetes.managedbuild.c.compiler.input.1635271144" superClass="com.digi.lxnetes.managedbuild.c.compiler.input"/>
 </tool>
-<tool id="com.digi.lxnetes.managedbuild.cpp.compiler.debug.690866987" name="GCC C++ Cross-Compiler" superClass="com.digi.lxnetes.managedbuild.cpp.compiler.debug">
-<option id="gnu.cpp.compiler.option.optimization.level.1748118633" name="Optimization Level" superClass="gnu.cpp.compiler.option.optimization.level" value="gnu.cpp.compiler.optimization.level.none" valueType="enumerated"/>
-<option id="gnu.cpp.compiler.option.debugging.level.872420564" name="Debug Level" superClass="gnu.cpp.compiler.option.debugging.level" value="gnu.cpp.compiler.debugging.level.max" valueType="enumerated"/>
+<tool id="com.digi.lxnetes.managedbuild.cpp.compiler.debug.661227966" name="GCC C++ Cross-Compiler" superClass="com.digi.lxnetes.managedbuild.cpp.compiler.debug">
+<option id="gnu.cpp.compiler.option.optimization.level.247774315" superClass="gnu.cpp.compiler.option.optimization.level" value="gnu.cpp.compiler.optimization.level.none" valueType="enumerated"/>
+<option id="gnu.cpp.compiler.option.debugging.level.254811728" superClass="gnu.cpp.compiler.option.debugging.level" value="gnu.cpp.compiler.debugging.level.max" valueType="enumerated"/>
 </tool>
-<tool id="com.digi.lxnetes.managedbuild.c.linker.debug.799521421" name="GCC C Cross-Linker" superClass="com.digi.lxnetes.managedbuild.c.linker.debug">
-<inputType id="cdt.managedbuild.tool.gnu.c.linker.input.1797328986" superClass="cdt.managedbuild.tool.gnu.c.linker.input">
+<tool id="com.digi.lxnetes.managedbuild.c.linker.debug.544455080" name="GCC C Cross-Linker" superClass="com.digi.lxnetes.managedbuild.c.linker.debug">
+<inputType id="cdt.managedbuild.tool.gnu.c.linker.input.825104607" superClass="cdt.managedbuild.tool.gnu.c.linker.input">
 <additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
 <additionalInput kind="additionalinput" paths="$(LIBS)"/>
 </inputType>
 </tool>
-<tool id="com.digi.lxnetes.managedbuild.cpp.linker.debug.462162841" name="GCC C++ Cross-Linker" superClass="com.digi.lxnetes.managedbuild.cpp.linker.debug"/>
-<tool id="com.digi.lxnetes.managedbuild.assembler.debug.1211926972" name="GCC C Cross-Assembler" superClass="com.digi.lxnetes.managedbuild.assembler.debug">
-<inputType id="cdt.managedbuild.tool.gnu.assembler.input.714936431" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
+<tool id="com.digi.lxnetes.managedbuild.cpp.linker.debug.890567240" name="GCC C++ Cross-Linker" superClass="com.digi.lxnetes.managedbuild.cpp.linker.debug"/>
+<tool id="com.digi.lxnetes.managedbuild.assembler.debug.1458710407" name="GCC C Cross-Assembler" superClass="com.digi.lxnetes.managedbuild.assembler.debug">
+<inputType id="cdt.managedbuild.tool.gnu.assembler.input.1182642695" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
 </tool>
 </toolChain>
 </folderInfo>
@@ -177,7 +176,7 @@
 <parser enabled="true"/>
 </scannerInfoProvider>
 </profile>
-<scannerConfigBuildInfo instanceId="com.digi.lxnetes.managedbuild.debugConfiguration.645916687.1552696755;com.digi.lxnetes.managedbuild.debugConfiguration.645916687.1552696755.;com.digi.lxnetes.managedbuild.c.compiler.debug.1487416509;com.digi.lxnetes.managedbuild.c.compiler.input.199440591">
+<scannerConfigBuildInfo instanceId="com.digi.lxnetes.managedbuild.realeaseConfiguration.1503279785;com.digi.lxnetes.managedbuild.realeaseConfiguration.1503279785.;com.digi.lxnetes.managedbuild.c.compiler.release.2005444046;com.digi.lxnetes.managedbuild.c.compiler.input.1765600777">
 <autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="com.digi.lxnetes.managedbuild.GCCManagedMakePerProjectProfileC"/>
 <profile id="org.eclipse.cdt.managedbuilder.core.GCCManagedMakePerProjectProfile">
 <buildOutputProvider>
@@ -310,7 +309,7 @@
 </scannerInfoProvider>
 </profile>
 </scannerConfigBuildInfo>
-<scannerConfigBuildInfo instanceId="com.digi.lxnetes.managedbuild.realeaseConfiguration.987372172.1753834414;com.digi.lxnetes.managedbuild.realeaseConfiguration.987372172.1753834414.;com.digi.lxnetes.managedbuild.c.compiler.release.278261312;com.digi.lxnetes.managedbuild.c.compiler.input.1081561197">
+<scannerConfigBuildInfo instanceId="com.digi.lxnetes.managedbuild.debugConfiguration.100236078;com.digi.lxnetes.managedbuild.debugConfiguration.100236078.;com.digi.lxnetes.managedbuild.c.compiler.debug.1641403664;com.digi.lxnetes.managedbuild.c.compiler.input.1635271144">
 <autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="com.digi.lxnetes.managedbuild.GCCManagedMakePerProjectProfileC"/>
 <profile id="org.eclipse.cdt.managedbuilder.core.GCCManagedMakePerProjectProfile">
 <buildOutputProvider>
@@ -446,8 +445,8 @@
 </storageModule>
 <storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
 </cconfiguration>
-<cconfiguration id="com.digi.lxnetes.managedbuild.realeaseConfiguration.987372172.1753834414">
-<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="com.digi.lxnetes.managedbuild.realeaseConfiguration.987372172.1753834414" moduleId="org.eclipse.cdt.core.settings" name="Release">
+<cconfiguration id="com.digi.lxnetes.managedbuild.realeaseConfiguration.1503279785">
+<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="com.digi.lxnetes.managedbuild.realeaseConfiguration.1503279785" moduleId="org.eclipse.cdt.core.settings" name="Release">
 <externalSettings/>
 <extensions>
 <extension id="org.eclipse.cdt.core.ELF" point="org.eclipse.cdt.core.BinaryParser"/>
@@ -457,32 +456,31 @@
 <extension id="org.eclipse.cdt.core.GLDErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
 </extensions>
 </storageModule>
-<storageModule moduleId="org.eclipse.cdt.core.language.mapping"/>
 <storageModule moduleId="cdtBuildSystem" version="4.0.0">
-<configuration artifactName="hello_world_c" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.release,org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe" cleanCommand="rm -rf" description="" id="com.digi.lxnetes.managedbuild.realeaseConfiguration.987372172.1753834414" name="Release" parent="com.digi.lxnetes.managedbuild.realeaseConfiguration">
-<folderInfo id="com.digi.lxnetes.managedbuild.realeaseConfiguration.987372172.1753834414." name="/" resourcePath="">
-<toolChain id="com.digi.lxnetes.managedbuild.toolChainRelease.1948527368" name="Digi EL Tool Chain" superClass="com.digi.lxnetes.managedbuild.toolChainRelease">
-<targetPlatform id="com.digi.lxnetes.managedbuild.targetPlatform.release.1023211015" name="Debug Platform" superClass="com.digi.lxnetes.managedbuild.targetPlatform.release"/>
-<builder buildPath="${workspace_loc:/hello_world_c/Release}" id="com.digi.lxnetes.builder.exe.release.978991109" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="Gnu Make Builder" superClass="com.digi.lxnetes.builder.exe.release"/>
-<tool id="com.digi.lxnetes.managedbuild.archiver.base.1268323381" name="GCC C Cross-Archiver" superClass="com.digi.lxnetes.managedbuild.archiver.base"/>
-<tool id="com.digi.lxnetes.managedbuild.c.compiler.release.278261312" name="GCC C Cross-Compiler" superClass="com.digi.lxnetes.managedbuild.c.compiler.release">
-<option defaultValue="gnu.c.optimization.level.most" id="gnu.c.compiler.option.optimization.level.1232027489" name="Optimization Level" superClass="gnu.c.compiler.option.optimization.level" valueType="enumerated"/>
-<option id="gnu.c.compiler.option.debugging.level.1649251413" name="Debug Level" superClass="gnu.c.compiler.option.debugging.level" value="gnu.c.debugging.level.none" valueType="enumerated"/>
-<inputType id="com.digi.lxnetes.managedbuild.c.compiler.input.1081561197" superClass="com.digi.lxnetes.managedbuild.c.compiler.input"/>
+<configuration artifactName="serialfwd" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.release,org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe" cleanCommand="rm -rf" description="" id="com.digi.lxnetes.managedbuild.realeaseConfiguration.1503279785" name="Release" parent="com.digi.lxnetes.managedbuild.realeaseConfiguration">
+<folderInfo id="com.digi.lxnetes.managedbuild.realeaseConfiguration.1503279785." name="/" resourcePath="">
+<toolChain id="com.digi.lxnetes.managedbuild.toolChainRelease.1937521211" name="Digi EL Tool Chain" superClass="com.digi.lxnetes.managedbuild.toolChainRelease">
+<targetPlatform id="com.digi.lxnetes.managedbuild.targetPlatform.release.596148553" name="Debug Platform" superClass="com.digi.lxnetes.managedbuild.targetPlatform.release"/>
+<builder buildPath="${workspace_loc:/serialfwd/Release}" id="com.digi.lxnetes.builder.exe.release.1202415382" managedBuildOn="true" name="Gnu Make Builder.Release" superClass="com.digi.lxnetes.builder.exe.release"/>
+<tool id="com.digi.lxnetes.managedbuild.archiver.base.1906069817" name="GCC C Cross-Archiver" superClass="com.digi.lxnetes.managedbuild.archiver.base"/>
+<tool id="com.digi.lxnetes.managedbuild.c.compiler.release.2005444046" name="GCC C Cross-Compiler" superClass="com.digi.lxnetes.managedbuild.c.compiler.release">
+<option defaultValue="gnu.c.optimization.level.most" id="gnu.c.compiler.option.optimization.level.1967970572" superClass="gnu.c.compiler.option.optimization.level" valueType="enumerated"/>
+<option id="gnu.c.compiler.option.debugging.level.1639906568" superClass="gnu.c.compiler.option.debugging.level" value="gnu.c.debugging.level.none" valueType="enumerated"/>
+<inputType id="com.digi.lxnetes.managedbuild.c.compiler.input.1765600777" superClass="com.digi.lxnetes.managedbuild.c.compiler.input"/>
 </tool>
-<tool id="com.digi.lxnetes.managedbuild.cpp.compiler.release.843988633" name="GCC C++ Cross-Compiler" superClass="com.digi.lxnetes.managedbuild.cpp.compiler.release">
-<option id="gnu.cpp.compiler.option.optimization.level.1447349844" name="Optimization Level" superClass="gnu.cpp.compiler.option.optimization.level" value="gnu.cpp.compiler.optimization.level.most" valueType="enumerated"/>
-<option id="gnu.cpp.compiler.option.debugging.level.211919730" name="Debug Level" superClass="gnu.cpp.compiler.option.debugging.level" value="gnu.cpp.compiler.debugging.level.none" valueType="enumerated"/>
+<tool id="com.digi.lxnetes.managedbuild.cpp.compiler.release.1649944141" name="GCC C++ Cross-Compiler" superClass="com.digi.lxnetes.managedbuild.cpp.compiler.release">
+<option id="gnu.cpp.compiler.option.optimization.level.1209497384" superClass="gnu.cpp.compiler.option.optimization.level" value="gnu.cpp.compiler.optimization.level.most" valueType="enumerated"/>
+<option id="gnu.cpp.compiler.option.debugging.level.743375995" superClass="gnu.cpp.compiler.option.debugging.level" value="gnu.cpp.compiler.debugging.level.none" valueType="enumerated"/>
 </tool>
-<tool id="com.digi.lxnetes.managedbuild.c.linker.release.1942362632" name="GCC C Cross-Linker" superClass="com.digi.lxnetes.managedbuild.c.linker.release">
-<inputType id="cdt.managedbuild.tool.gnu.c.linker.input.694363422" superClass="cdt.managedbuild.tool.gnu.c.linker.input">
+<tool id="com.digi.lxnetes.managedbuild.c.linker.release.1750504815" name="GCC C Cross-Linker" superClass="com.digi.lxnetes.managedbuild.c.linker.release">
+<inputType id="cdt.managedbuild.tool.gnu.c.linker.input.1398856707" superClass="cdt.managedbuild.tool.gnu.c.linker.input">
 <additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
 <additionalInput kind="additionalinput" paths="$(LIBS)"/>
 </inputType>
 </tool>
-<tool id="com.digi.lxnetes.mangedbuild.cpp.linker.release.190929562" name="GCC C++ Cross-Linker" superClass="com.digi.lxnetes.mangedbuild.cpp.linker.release"/>
-<tool id="com.digi.lxnetes.mangedbuild.assembler.release.1604581836" name="GCC C Cross-Assembler" superClass="com.digi.lxnetes.mangedbuild.assembler.release">
-<inputType id="cdt.managedbuild.tool.gnu.assembler.input.342829465" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
+<tool id="com.digi.lxnetes.mangedbuild.cpp.linker.release.449548382" name="GCC C++ Cross-Linker" superClass="com.digi.lxnetes.mangedbuild.cpp.linker.release"/>
+<tool id="com.digi.lxnetes.mangedbuild.assembler.release.1850450374" name="GCC C Cross-Assembler" superClass="com.digi.lxnetes.mangedbuild.assembler.release">
+<inputType id="cdt.managedbuild.tool.gnu.assembler.input.1381957394" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
 </tool>
 </toolChain>
 </folderInfo>
@@ -620,7 +618,7 @@
 <parser enabled="true"/>
 </scannerInfoProvider>
 </profile>
-<scannerConfigBuildInfo instanceId="com.digi.lxnetes.managedbuild.debugConfiguration.645916687.1552696755;com.digi.lxnetes.managedbuild.debugConfiguration.645916687.1552696755.;com.digi.lxnetes.managedbuild.c.compiler.debug.1487416509;com.digi.lxnetes.managedbuild.c.compiler.input.199440591">
+<scannerConfigBuildInfo instanceId="com.digi.lxnetes.managedbuild.realeaseConfiguration.1503279785;com.digi.lxnetes.managedbuild.realeaseConfiguration.1503279785.;com.digi.lxnetes.managedbuild.c.compiler.release.2005444046;com.digi.lxnetes.managedbuild.c.compiler.input.1765600777">
 <autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="com.digi.lxnetes.managedbuild.GCCManagedMakePerProjectProfileC"/>
 <profile id="org.eclipse.cdt.managedbuilder.core.GCCManagedMakePerProjectProfile">
 <buildOutputProvider>
@@ -753,7 +751,7 @@
 </scannerInfoProvider>
 </profile>
 </scannerConfigBuildInfo>
-<scannerConfigBuildInfo instanceId="com.digi.lxnetes.managedbuild.realeaseConfiguration.987372172.1753834414;com.digi.lxnetes.managedbuild.realeaseConfiguration.987372172.1753834414.;com.digi.lxnetes.managedbuild.c.compiler.release.278261312;com.digi.lxnetes.managedbuild.c.compiler.input.1081561197">
+<scannerConfigBuildInfo instanceId="com.digi.lxnetes.managedbuild.debugConfiguration.100236078;com.digi.lxnetes.managedbuild.debugConfiguration.100236078.;com.digi.lxnetes.managedbuild.c.compiler.debug.1641403664;com.digi.lxnetes.managedbuild.c.compiler.input.1635271144">
 <autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="com.digi.lxnetes.managedbuild.GCCManagedMakePerProjectProfileC"/>
 <profile id="org.eclipse.cdt.managedbuilder.core.GCCManagedMakePerProjectProfile">
 <buildOutputProvider>
@@ -890,6 +888,6 @@
 </cconfiguration>
 </storageModule>
 <storageModule moduleId="cdtBuildSystem" version="4.0.0">
-<project id="hello_world_c.com.digi.lxnetes.managedbuild.lxnetesExecutable.1128345674" name="Executable" projectType="com.digi.lxnetes.managedbuild.lxnetesExecutable"/>
+<project id="serialfwd.com.digi.lxnetes.managedbuild.lxnetesExecutable.790018189" name="Executable" projectType="com.digi.lxnetes.managedbuild.lxnetesExecutable"/>
 </storageModule>
 </cproject>

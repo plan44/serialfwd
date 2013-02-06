@@ -1,5 +1,5 @@
 /*
- * hello_world.c
+ * serialforwarder.c
  *
  * Description: Serial test
  *
@@ -37,9 +37,51 @@ static void usage(char *name)
 {
   fprintf(stderr, "usage:\n");
   fprintf(stderr, "  %s (serialportdevice|ipaddr) answerbytes [hex [hex...]]\n", name);
-  fprintf(stderr, "  - sends specified hex bytes and then waits for specified number of answer bytes (-1=forever, use Ctrl-C to abort)\n");
-  fprintf(stderr, "  %s (serialportdevice|ipaddr)\n", name);
-  fprintf(stderr, "  - proxy mode: accepts connection on TCP port %d and forwards to/from serial/ipaddr\n", PROXYPORT);
+  fprintf(stderr, "    sends specified hex bytes and then waits for specified number of answer bytes (-1=forever, use Ctrl-C to abort)\n");
+  fprintf(stderr, "  %s (serialportdevice|ipaddr) [-d]\n", name);
+  fprintf(stderr, "    proxy mode: accepts connection on TCP port %d and forwards to/from serial/ipaddr\n", PROXYPORT);
+  fprintf(stderr, "    -d : fully daemonize and suppress showing byte transfer messages on stdout\n");
+}
+
+
+static void daemonize(void)
+{
+  pid_t pid, sid;
+
+  /* already a daemon */
+  if ( getppid() == 1 ) return;
+
+  /* Fork off the parent process */
+  pid = fork();
+  if (pid < 0) {
+    exit(EXIT_FAILURE);
+  }
+  /* If we got a good PID, then we can exit the parent process. */
+  if (pid > 0) {
+    exit(EXIT_SUCCESS);
+  }
+
+  /* At this point we are executing as the child process */
+
+  /* Change the file mode mask */
+  umask(0);
+
+  /* Create a new SID for the child process */
+  sid = setsid();
+  if (sid < 0) {
+    exit(EXIT_FAILURE);
+  }
+
+  /* Change the current working directory.  This prevents the current
+     directory from being locked; hence not being able to remove it. */
+  if ((chdir("/")) < 0) {
+    exit(EXIT_FAILURE);
+  }
+
+  /* Redirect standard files to /dev/null */
+  freopen( "/dev/null", "r", stdin);
+  freopen( "/dev/null", "w", stdout);
+  freopen( "/dev/null", "w", stderr);
 }
 
 
@@ -52,12 +94,25 @@ int main(int argc, char **argv)
     exit(1);
   }
   int proxyMode = FALSE;
+  int daemonMode = FALSE;
   int serialMode = FALSE;
+  int verbose = TRUE;
 
-  if (argc==2) {
+  if (argc==3 && strcmp(argv[2],"-d")==0) {
+    // daemon mode (relevant only in proxy mode)
+    daemonMode = TRUE;
+    verbose = FALSE;
+    printf("Starting background daemon listening on port %d for connections\n",PROXYPORT);
+  }
+  if (argc==2 || daemonMode) {
     // proxy mode
     proxyMode = TRUE;
   }
+
+  if (daemonMode) {
+    daemonize();
+  }
+
 
   int argIdx;
   int data;
@@ -124,7 +179,7 @@ int main(int argc, char **argv)
     }
   }
 
-	if (proxyMode) {
+  if (proxyMode) {
 
     int listenfd = 0, servingfd = 0;
     struct sockaddr_in serv_addr;
@@ -145,7 +200,7 @@ int main(int argc, char **argv)
 
     listen(listenfd, 1); // max one connection for now
 
-    printf("Proxy mode, listening on port %d for connections\n",PROXYPORT);
+    if (verbose) printf("Proxy mode, listening on port %d for connections\n",PROXYPORT);
 
     while (TRUE) {
       // accept the connection, open fd
@@ -164,52 +219,52 @@ int main(int argc, char **argv)
           n = read(servingfd, &byte, 1);
           if (n<1) break; // connection closed
           // got a byte, send it
-          printf("Transmitting byte : 0x%02X\n", byte);
+          if (verbose) printf("Transmitting byte : 0x%02X\n", byte);
           // send
           res = write(outputfd,&byte,1);
         }
         if (FD_ISSET(outputfd,&readfs)) {
           // input from serial available
           res = read(outputfd,&byte,1);   /* returns after 1 chars have been input */
-          printf("Received     byte : 0x%02X\n", byte);
+          if (verbose) printf("Received     byte : 0x%02X\n", byte);
           res = write(servingfd,&byte,1);
         }
       }
       close(servingfd);
-      printf("Connection closed, waiting for new connection\n");
+      if (verbose) printf("Connection closed, waiting for new connection\n");
     }
-	}
-	else {
+  }
+  else {
     // command line direct mode
-	  int numRespBytes = 0;
-	  sscanf(argv[2],"%d",&numRespBytes);
+    int numRespBytes = 0;
+    sscanf(argv[2],"%d",&numRespBytes);
 
-	  // parse and send the input bytes
+    // parse and send the input bytes
     for (argIdx=3; argIdx<argc; argIdx++) {
       // parse as hex
       sscanf(argv[argIdx],"%x",&data);
       byte = data;
       // show
-      printf("Transmitting byte : 0x%02X\n",data);
+      if (verbose) printf("Transmitting byte : 0x%02X\n",data);
       // send
       res = write(outputfd,&byte,1);
     }
 
     while (numRespBytes<0 || numRespBytes>0) {       /* loop for input */
       res = read(outputfd,&byte,1);   /* returns after 1 chars have been input */
-      printf("Received     byte : 0x%02X\n",byte);
+      if (verbose) printf("Received     byte : 0x%02X\n",byte);
       numRespBytes--;
     }
-	}
+  }
 
-	// done
-	if (serialMode) {
-	  tcsetattr(outputfd,TCSANOW,&oldtio);
-	}
+  // done
+  if (serialMode) {
+    tcsetattr(outputfd,TCSANOW,&oldtio);
+  }
 
-	// close
-	close(outputfd);
+  // close
+  close(outputfd);
 
-	// return
-	return 0;
+  // return
+  return 0;
 }

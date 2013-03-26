@@ -31,16 +31,23 @@
 
 volatile int STOP=FALSE;
 
-#define PROXYPORT 2101
+#define DEFAULT_PROXYPORT 2101
+#define DEFAULT_CONNECTIONPORT 2101
+
+
 
 static void usage(char *name)
 {
   fprintf(stderr, "usage:\n");
-  fprintf(stderr, "  %s (serialportdevice|ipaddr) answerbytes [hex [hex...]]\n", name);
-  fprintf(stderr, "    sends specified hex bytes and then waits for specified number of answer bytes (-1=forever, use Ctrl-C to abort)\n");
-  fprintf(stderr, "  %s (serialportdevice|ipaddr) [-d]\n", name);
-  fprintf(stderr, "    proxy mode: accepts connection on TCP port %d and forwards to/from serial/ipaddr\n", PROXYPORT);
+  fprintf(stderr, "  %s [-P port] (serialportdevice|ipaddr) answerbytes [hex [hex...]]\n", name);
+  fprintf(stderr, "    sends specified hex bytes and then waits for specified number of answer bytes\n");
+  fprintf(stderr, "    (answerbytes == -1: wait forever, use Ctrl-C to abort)\n");
+  fprintf(stderr, "    -P port : port to connect to (default: %d)\n", DEFAULT_CONNECTIONPORT);
+  fprintf(stderr, "  %s [-P port] (serialportdevice|ipaddr) [-d] [-p port]\n", name);
+  fprintf(stderr, "    proxy mode: accepts TCP connection and forwards to/from serial/ipaddr\n");
   fprintf(stderr, "    -d : fully daemonize and suppress showing byte transfer messages on stdout\n");
+  fprintf(stderr, "    -p port : port to accept connections from (default: %d)\n", DEFAULT_PROXYPORT);
+  fprintf(stderr, "    -P port : port to connect to (default: %d)\n", DEFAULT_CONNECTIONPORT);
 }
 
 
@@ -97,19 +104,38 @@ int main(int argc, char **argv)
   int daemonMode = FALSE;
   int serialMode = FALSE;
   int verbose = TRUE;
+  int proxyPort = DEFAULT_PROXYPORT;
+  int connPort = DEFAULT_CONNECTIONPORT;
 
-  if (argc==3 && strcmp(argv[2],"-d")==0) {
-    // daemon mode (relevant only in proxy mode)
-    daemonMode = TRUE;
-    verbose = FALSE;
-    printf("Starting background daemon listening on port %d for connections\n",PROXYPORT);
+  int c;
+  while ((c = getopt(argc, argv, "hdp:P:")) != -1)
+  {
+    switch (c) {
+      case 'h':
+        usage(argv[0]);
+        exit(0);
+      case 'd':
+        daemonMode = TRUE;
+        verbose = FALSE;
+        break;
+      case 'p':
+        proxyPort = atoi(optarg);
+        break;
+      case 'P':
+        connPort = atoi(optarg);
+        break;
+      default:
+        exit(-1);
+    }
   }
-  if (argc==2 || daemonMode) {
-    // proxy mode
+  // proxymode is when only one arg is here
+  if (argc-optind == 1 || daemonMode) {
     proxyMode = TRUE;
   }
 
-  if (daemonMode) {
+  // daemonize now if requested and in proxy mode
+  if (daemonMode && proxyMode) {
+    printf("Starting background daemon listening on port %d for connections\n",proxyPort);
     daemonize();
   }
 
@@ -121,10 +147,10 @@ int main(int argc, char **argv)
   // Open input
   int outputfd =0;
   int res;
-  char *outputname = argv[1];
+  char *outputname = argv[optind++];
   struct termios oldtio,newtio;
 
-  serialMode = *(argv[1])=='/';
+  serialMode = *outputname=='/';
 
   // check type of input
   if (serialMode) {
@@ -163,7 +189,7 @@ int main(int argc, char **argv)
     // prepare IP address
     memset(&conn_addr, '0', sizeof(conn_addr));
     conn_addr.sin_family = AF_INET;
-    conn_addr.sin_port = htons(PROXYPORT);
+    conn_addr.sin_port = htons(connPort);
 
     struct hostent *server;
     server = gethostbyname(outputname);
@@ -194,13 +220,13 @@ int main(int argc, char **argv)
 
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-    serv_addr.sin_port = htons(PROXYPORT); // port
+    serv_addr.sin_port = htons(proxyPort); // port
 
     bind(listenfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr));
 
     listen(listenfd, 1); // max one connection for now
 
-    if (verbose) printf("Proxy mode, listening on port %d for connections\n",PROXYPORT);
+    if (verbose) printf("Proxy mode, listening on port %d for connections\n",proxyPort);
 
     while (TRUE) {
       // accept the connection, open fd
@@ -237,10 +263,10 @@ int main(int argc, char **argv)
   else {
     // command line direct mode
     int numRespBytes = 0;
-    sscanf(argv[2],"%d",&numRespBytes);
+    sscanf(argv[optind++],"%d",&numRespBytes);
 
     // parse and send the input bytes
-    for (argIdx=3; argIdx<argc; argIdx++) {
+    for (argIdx=optind; argIdx<argc; argIdx++) {
       // parse as hex
       sscanf(argv[argIdx],"%x",&data);
       byte = data;

@@ -42,12 +42,12 @@ static void usage(char *name)
   fprintf(stderr, "  %s [-P port] (serialportdevice|ipaddr) answerbytes [hex [hex...]]\n", name);
   fprintf(stderr, "    sends specified hex bytes and then waits for specified number of answer bytes\n");
   fprintf(stderr, "    (answerbytes == -1: wait forever, use Ctrl-C to abort)\n");
-  fprintf(stderr, "    -P port : port to connect to (default: %d)\n", DEFAULT_CONNECTIONPORT);
+  fprintf(stderr, "    -P port : port to connect to (default: %d)\n", DEFAULT_CONNECTIONPORT);
   fprintf(stderr, "  %s [-P port] (serialportdevice|ipaddr) [-d] [-p port]\n", name);
-  fprintf(stderr, "    proxy mode: accepts TCP connection and forwards to/from serial/ipaddr\n");
-  fprintf(stderr, "    -d : fully daemonize and suppress showing byte transfer messages on stdout\n");
-  fprintf(stderr, "    -p port : port to accept connections from (default: %d)\n", DEFAULT_PROXYPORT);
-  fprintf(stderr, "    -P port : port to connect to (default: %d)\n", DEFAULT_CONNECTIONPORT);
+  fprintf(stderr, "    proxy mode: accepts TCP connection and forwards to/from serial/ipaddr\n");
+  fprintf(stderr, "    -d : fully daemonize and suppress showing byte transfer messages on stdout\n");
+  fprintf(stderr, "    -p port : port to accept connections from (default: %d)\n", DEFAULT_PROXYPORT);
+  fprintf(stderr, "    -P port : port to connect to (default: %d)\n", DEFAULT_CONNECTIONPORT);
 }
 
 

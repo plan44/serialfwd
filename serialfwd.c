@@ -41,7 +41,7 @@ static void usage(char *name)
   fprintf(stderr, "usage:\n");
   fprintf(stderr, "  %s [-P port] (serialportdevice|ipaddr) answerbytes [hex [hex...]]\n", name);
   fprintf(stderr, "    sends specified hex bytes and then waits for specified number of answer bytes\n");
-  fprintf(stderr, "    (answerbytes == -1: wait forever, use Ctrl-C to abort)\n");
+  fprintf(stderr, "    (answerbytes == INF: wait forever, use Ctrl-C to abort)\n");
   fprintf(stderr, "    -P port : port to connect to (default: %d)\n", DEFAULT_CONNECTIONPORT);
   fprintf(stderr, "  %s [-P port] (serialportdevice|ipaddr) [-d] [-p port]\n", name);
   fprintf(stderr, "    proxy mode: accepts TCP connection and forwards to/from serial/ipaddr\n");
@@ -263,8 +263,15 @@ int main(int argc, char **argv)
   else {
     // command line direct mode
     int numRespBytes = 0;
-    sscanf(argv[optind++],"%d",&numRespBytes);
-
+    if (strcmp(argv[optind],"INF")==0) {
+      // wait indefinitely
+      numRespBytes = -1;
+    }
+    else {
+      // parse number of bytes expected
+      sscanf(argv[optind],"%d",&numRespBytes);
+    }
+    optind++;
     // parse and send the input bytes
     for (argIdx=optind; argIdx<argc; argIdx++) {
       // parse as hex

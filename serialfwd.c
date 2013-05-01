@@ -33,7 +33,7 @@ volatile int STOP=FALSE;
 
 #define DEFAULT_PROXYPORT 2101
 #define DEFAULT_CONNECTIONPORT 2101
-
+#define DEFAULT_BAUDRATE 9600
 
 
 static void usage(char *name)
@@ -48,6 +48,7 @@ static void usage(char *name)
   fprintf(stderr, "    -d : fully daemonize and suppress showing byte transfer messages on stdout\n");
   fprintf(stderr, "    -p port : port to accept connections from (default: %d)\n", DEFAULT_PROXYPORT);
   fprintf(stderr, "    -P port : port to connect to (default: %d)\n", DEFAULT_CONNECTIONPORT);
+  fprintf(stderr, "    -b baudrate : port to connect to (default: %d)\n", DEFAULT_BAUDRATE);
 }
 
 
@@ -106,9 +107,11 @@ int main(int argc, char **argv)
   int verbose = TRUE;
   int proxyPort = DEFAULT_PROXYPORT;
   int connPort = DEFAULT_CONNECTIONPORT;
+  int baudRate = DEFAULT_BAUDRATE;
+  int baudRateCode = B0;
 
   int c;
-  while ((c = getopt(argc, argv, "hdp:P:")) != -1)
+  while ((c = getopt(argc, argv, "hdp:P:b:")) != -1)
   {
     switch (c) {
       case 'h':
@@ -123,6 +126,9 @@ int main(int argc, char **argv)
         break;
       case 'P':
         connPort = atoi(optarg);
+        break;
+      case 'b':
+        baudRate = atoi(optarg);
         break;
       default:
         exit(-1);
@@ -155,6 +161,26 @@ int main(int argc, char **argv)
   // check type of input
   if (serialMode) {
     // assume it's a serial port
+    switch (baudRate) {
+      case 50 : baudRateCode = B50; break;
+      case 75 : baudRateCode = B75; break;
+      case 134 : baudRateCode = B134; break;
+      case 150 : baudRateCode = B150; break;
+      case 200 : baudRateCode = B200; break;
+      case 300 : baudRateCode = B300; break;
+      case 600 : baudRateCode = B600; break;
+      case 1200 : baudRateCode = B1200; break;
+      case 1800 : baudRateCode = B1800; break;
+      case 2400 : baudRateCode = B2400; break;
+      case 4800 : baudRateCode = B4800; break;
+      case 9600 : baudRateCode = B9600; break;
+      case 19200 : baudRateCode = B19200; break;
+      case 38400 : baudRateCode = B38400; break;
+      default:
+        fprintf(stderr, "invalid baudrate %d (standard baudrates 50..38400 are supported)\n", baudRate);
+        exit(1);
+    }
+
     outputfd = open(outputname, O_RDWR | O_NOCTTY);
     if (outputfd <0) {
       perror(outputname); exit(-1);
@@ -164,7 +190,7 @@ int main(int argc, char **argv)
     // see "man termios" for details
     memset(&newtio, 0, sizeof(newtio));
     // - baudrate, 8-N-1, no modem control lines (local), reading enabled
-    newtio.c_cflag = BAUDRATE | CRTSCTS | CS8 | CLOCAL | CREAD;
+    newtio.c_cflag = baudRateCode | CRTSCTS | CS8 | CLOCAL | CREAD;
     // - ignore parity errors
     newtio.c_iflag = IGNPAR;
     // - no output control

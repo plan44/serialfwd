@@ -48,7 +48,7 @@ static void usage(char *name)
   fprintf(stderr, "    -d : fully daemonize and suppress showing byte transfer messages on stdout\n");
   fprintf(stderr, "    -p port : port to accept connections from (default: %d)\n", DEFAULT_PROXYPORT);
   fprintf(stderr, "    -P port : port to connect to (default: %d)\n", DEFAULT_CONNECTIONPORT);
-  fprintf(stderr, "    -b baudrate : port to connect to (default: %d)\n", DEFAULT_BAUDRATE);
+  fprintf(stderr, "    -b baudrate : baudrate when connecting to serial port (default: %d)\n", DEFAULT_BAUDRATE);
 }
 
 

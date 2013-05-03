@@ -180,7 +180,9 @@ int main(int argc, char **argv)
       case 57600 : baudRateCode = B57600; break;
       case 115200 : baudRateCode = B115200; break;
       case 230400 : baudRateCode = B230400; break;
+      #ifndef __APPLE__
       case 460800 : baudRateCode = B460800; break;
+      #endif
 
       default:
         fprintf(stderr, "invalid baudrate %d (standard baudrates 50..460800 are supported)\n", baudRate);

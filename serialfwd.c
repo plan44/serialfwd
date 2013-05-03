@@ -19,6 +19,7 @@
 #include <errno.h>
 
 #include <sys/socket.h>
+#include <sys/ioctl.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
@@ -244,6 +245,12 @@ int main(int argc, char **argv)
     fd_set readfs;    /* file descriptor set */
     int    maxrdfd;     /* maximum file descriptor used */
 
+    const size_t bufsiz = 200;
+    unsigned char buffer[bufsiz];
+    size_t numBytes;
+    size_t gotBytes;
+    size_t i;
+
     int n;
 
     listenfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -273,18 +280,51 @@ int main(int argc, char **argv)
         select(maxrdfd, &readfs, NULL, NULL, NULL);
         if (FD_ISSET(servingfd,&readfs)) {
           // input from TCP connection available
-          n = read(servingfd, &byte, 1);
-          if (n<1) break; // connection closed
-          // got a byte, send it
-          if (verbose) printf("Transmitting byte : 0x%02X\n", byte);
+          // - get number of bytes available
+          n = ioctl(servingfd, FIONREAD, &numBytes);
+          if (n<0) break; // connection closed
+          // limit to max buffer size
+          if (numBytes>bufsiz)
+            numBytes = bufsiz;
+          // read
+          gotBytes = 0;
+          if (numBytes>0)
+            gotBytes = read(servingfd,buffer,numBytes); // read available bytes
+          if (gotBytes<1) break; // connection closed
+          // got bytes, send them
+          if (verbose) {
+            printf("Transmitting : ");
+            for (i=0; i<gotBytes; ++i) {
+              printf("0x%02X ", buffer[i]);
+            }
+            printf("\n");
+          }
           // send
-          res = write(outputfd,&byte,1);
+          res = write(outputfd,buffer,gotBytes);
         }
         if (FD_ISSET(outputfd,&readfs)) {
           // input from serial available
-          res = read(outputfd,&byte,1);   /* returns after 1 chars have been input */
-          if (verbose) printf("Received     byte : 0x%02X\n", byte);
-          res = write(servingfd,&byte,1);
+          // - get number of bytes available
+          n = ioctl(outputfd, FIONREAD, &numBytes);
+          if (n<0) break; // connection closed
+          // limit to max buffer size
+          if (numBytes>bufsiz)
+            numBytes = bufsiz;
+          // read
+          gotBytes = 0;
+          if (numBytes>0)
+            gotBytes = read(outputfd,buffer,numBytes); // read available bytes
+          if (gotBytes<1) break; // connection closed
+          // got bytes, send them
+          if (verbose) {
+            printf("Received     : ");
+            for (i=0; i<gotBytes; ++i) {
+              printf("0x%02X ", buffer[i]);
+            }
+            printf("\n");
+          }
+          // send
+          res = write(servingfd,buffer,gotBytes);
         }
       }
       close(servingfd);

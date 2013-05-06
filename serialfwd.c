@@ -40,14 +40,14 @@ volatile int STOP=FALSE;
 static void usage(char *name)
 {
   fprintf(stderr, "usage:\n");
-  fprintf(stderr, "  %s [-P port] (serialportdevice|ipaddr) answerbytes [hex [hex...]]\n", name);
+  fprintf(stderr, "  %s [-P port] [-b baudrate] (serialportdevice|ipaddr) answerbytes [hex [hex...]]\n", name);
   fprintf(stderr, "    sends specified hex bytes and then waits for specified number of answer bytes\n");
   fprintf(stderr, "    (answerbytes == INF: wait forever, use Ctrl-C to abort)\n");
   fprintf(stderr, "    -P port : port to connect to (default: %d)\n", DEFAULT_CONNECTIONPORT);
-  fprintf(stderr, "  %s [-P port] (serialportdevice|ipaddr) [-d] [-p port]\n", name);
+  fprintf(stderr, "  %s [-d] [-p servingport] [-P port] [-b baudrate] (serialportdevice|ipaddr)\n", name);
   fprintf(stderr, "    proxy mode: accepts TCP connection and forwards to/from serial/ipaddr\n");
   fprintf(stderr, "    -d : fully daemonize and suppress showing byte transfer messages on stdout\n");
-  fprintf(stderr, "    -p port : port to accept connections from (default: %d)\n", DEFAULT_PROXYPORT);
+  fprintf(stderr, "    -p servingport : port to accept connections from (default: %d)\n", DEFAULT_PROXYPORT);
   fprintf(stderr, "    -P port : port to connect to (default: %d)\n", DEFAULT_CONNECTIONPORT);
   fprintf(stderr, "    -b baudrate : baudrate when connecting to serial port (default: %d)\n", DEFAULT_BAUDRATE);
 }
@@ -276,15 +276,15 @@ int main(int argc, char **argv)
       FD_ZERO(&readfs);
       // wait for getting data from either side now
       while (TRUE) {
-        FD_SET(servingfd, &readfs);  /* set testing for source 2 */
-        FD_SET(outputfd, &readfs);  /* set testing for source 1 */
+        FD_SET(servingfd, &readfs);  /* set testing for serving connection */
+        FD_SET(outputfd, &readfs);  /* set testing for serial/tcp client connection */
         // block until input becomes available
         select(maxrdfd, &readfs, NULL, NULL, NULL);
         if (FD_ISSET(servingfd,&readfs)) {
-          // input from TCP connection available
+          // input from served TCP connection available
           // - get number of bytes available
           n = ioctl(servingfd, FIONREAD, &numBytes);
-          if (n<0) break; // connection closed
+          if (n<0 || numBytes<=0) break; // connection closed
           // limit to max buffer size
           if (numBytes>bufsiz)
             numBytes = bufsiz;
@@ -301,14 +301,14 @@ int main(int argc, char **argv)
             }
             printf("\n");
           }
-          // send
+          // send to serial client
           res = write(outputfd,buffer,gotBytes);
         }
         if (FD_ISSET(outputfd,&readfs)) {
-          // input from serial available
+          // input from serial/client connection available
           // - get number of bytes available
           n = ioctl(outputfd, FIONREAD, &numBytes);
-          if (n<0) break; // connection closed
+          if (n<0 || numBytes<=0) goto outConnError; // outgoing connection aborted
           // limit to max buffer size
           if (numBytes>bufsiz)
             numBytes = bufsiz;
@@ -316,7 +316,7 @@ int main(int argc, char **argv)
           gotBytes = 0;
           if (numBytes>0)
             gotBytes = read(outputfd,buffer,numBytes); // read available bytes
-          if (gotBytes<1) break; // connection closed
+          if (gotBytes<1) goto outConnError; // outgoing connection aborted
           // got bytes, send them
           if (verbose) {
             printf("Received     : ");
@@ -325,7 +325,7 @@ int main(int argc, char **argv)
             }
             printf("\n");
           }
-          // send
+          // send to server
           res = write(servingfd,buffer,gotBytes);
         }
       }
@@ -363,6 +363,7 @@ int main(int argc, char **argv)
     }
   }
 
+outConnError:
   // done
   if (serialMode) {
     tcsetattr(outputfd,TCSANOW,&oldtio);

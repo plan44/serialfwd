@@ -50,6 +50,7 @@ static void usage(char *name)
   fprintf(stderr, "    -p servingport : port to accept connections from (default: %d)\n", DEFAULT_PROXYPORT);
   fprintf(stderr, "    -P port : port to connect to (default: %d)\n", DEFAULT_CONNECTIONPORT);
   fprintf(stderr, "    -b baudrate : baudrate when connecting to serial port (default: %d)\n", DEFAULT_BAUDRATE);
+  fprintf(stderr, "    -w seconds : number of seconds to wait before (re)opening connections (default: 0)\n");
 }
 
 
@@ -110,9 +111,10 @@ int main(int argc, char **argv)
   int connPort = DEFAULT_CONNECTIONPORT;
   int baudRate = DEFAULT_BAUDRATE;
   int baudRateCode = B0;
+  int startupDelay = 0;
 
   int c;
-  while ((c = getopt(argc, argv, "hdp:P:b:")) != -1)
+  while ((c = getopt(argc, argv, "hdp:P:b:w:")) != -1)
   {
     switch (c) {
       case 'h':
@@ -130,6 +132,9 @@ int main(int argc, char **argv)
         break;
       case 'b':
         baudRate = atoi(optarg);
+        break;
+      case 'w':
+        startupDelay = atoi(optarg);
         break;
       default:
         exit(-1);
@@ -181,6 +186,11 @@ int main(int argc, char **argv)
   }
 
   do {
+
+    if (startupDelay>0) {
+      if (verbose) printf("Waiting %d seconds before opening connections\n", startupDelay);
+      sleep(startupDelay);
+    }
 
     int data;
     unsigned char byte;

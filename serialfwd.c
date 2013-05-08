@@ -95,6 +95,105 @@ static void daemonize(void)
 }
 
 
+// globals
+// - options and params from cmdline
+char *outputname = NULL;
+int proxyMode = FALSE;
+int daemonMode = FALSE;
+int serialMode = FALSE;
+int verbose = TRUE;
+int proxyPort = DEFAULT_PROXYPORT;
+int connPort = DEFAULT_CONNECTIONPORT;
+int baudRate = DEFAULT_BAUDRATE;
+int startupDelay = 0;
+
+// outgoing connection
+int outputfd = -1;
+int baudRateCode = B0;
+struct termios oldtio; // saved termios to restore at exit
+
+
+void openOutgoing()
+{
+  if (outputfd<0) {
+    // Open serial or TCP outgoing connection
+    int res;
+    struct termios newtio;
+
+    if (serialMode) {
+      if (verbose) printf("Opening outgoing serial connection to %s\n",outputname);
+
+      outputfd = open(outputname, O_RDWR | O_NOCTTY);
+      if (outputfd <0) {
+        perror(outputname); exit(-1);
+      }
+      tcgetattr(outputfd,&oldtio); // save current port settings
+
+      // see "man termios" for details
+      memset(&newtio, 0, sizeof(newtio));
+      // - baudrate, 8-N-1, no modem control lines (local), reading enabled
+      newtio.c_cflag = baudRateCode | CRTSCTS | CS8 | CLOCAL | CREAD;
+      // - ignore parity errors
+      newtio.c_iflag = IGNPAR;
+      // - no output control
+      newtio.c_oflag = 0;
+      // - no input control (non-canonical)
+      newtio.c_lflag = 0;
+      // - no inter-char time
+      newtio.c_cc[VTIME]    = 0;   /* inter-character timer unused */
+      // - receive every single char seperately
+      newtio.c_cc[VMIN]     = 1;   /* blocking read until 1 chars received */
+      // - set new params
+      tcflush(outputfd, TCIFLUSH);
+      tcsetattr(outputfd,TCSANOW,&newtio);
+    }
+    else {
+      if (verbose) printf("Opening outgoing TCP connection to %s\n",outputname);
+      // assume it's an IP address or hostname
+      struct sockaddr_in conn_addr;
+      if ((outputfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+        printf("Error: Could not create socket\n");
+        exit(1);
+      }
+      // prepare IP address
+      memset(&conn_addr, '0', sizeof(conn_addr));
+      conn_addr.sin_family = AF_INET;
+      conn_addr.sin_port = htons(connPort);
+
+      struct hostent *server;
+      server = gethostbyname(outputname);
+      if (server == NULL) {
+        printf("Error: no such host");
+        exit(1);
+      }
+      memcpy((char *)&conn_addr.sin_addr.s_addr, (char *)server->h_addr, server->h_length);
+
+      if ((res = connect(outputfd, (struct sockaddr *)&conn_addr, sizeof(conn_addr))) < 0) {
+        printf("Error: %s\n", strerror(errno));
+        exit(1);
+      }
+    }
+  }
+}
+
+
+void closeOutgoing()
+{
+  if (outputfd>=0) {
+    if (serialMode) {
+      if (verbose) printf("Closing outgoing serial connection to %s\n",outputname);
+      tcsetattr(outputfd,TCSANOW,&oldtio);
+    }
+    else {
+      if (verbose) printf("Closing outgoing TCP connection to %s\n",outputname);
+    }
+    // close
+    close(outputfd);
+    outputfd = -1;
+  }
+}
+
+
 
 int main(int argc, char **argv)
 {
@@ -103,15 +202,6 @@ int main(int argc, char **argv)
     usage(argv[0]);
     exit(1);
   }
-  int proxyMode = FALSE;
-  int daemonMode = FALSE;
-  int serialMode = FALSE;
-  int verbose = TRUE;
-  int proxyPort = DEFAULT_PROXYPORT;
-  int connPort = DEFAULT_CONNECTIONPORT;
-  int baudRate = DEFAULT_BAUDRATE;
-  int baudRateCode = B0;
-  int startupDelay = 0;
 
   int c;
   while ((c = getopt(argc, argv, "hdp:P:b:w:")) != -1)
@@ -146,7 +236,7 @@ int main(int argc, char **argv)
   }
 
   int argIdx;
-  char *outputname = argv[optind++];
+  outputname = argv[optind++];
   serialMode = *outputname=='/';
 
   // check type of input
@@ -181,78 +271,20 @@ int main(int argc, char **argv)
 
   // daemonize now if requested and in proxy mode
   if (daemonMode && proxyMode) {
-    printf("Starting background daemon listening on port %d for connections\n",proxyPort);
+    printf("Starting background daemon listening on port %d for incoming connections\n",proxyPort);
     daemonize();
   }
 
   do {
 
     if (startupDelay>0) {
-      if (verbose) printf("Waiting %d seconds before opening connections\n", startupDelay);
+      if (verbose) printf("Waiting %d seconds before opening any connections\n", startupDelay);
       sleep(startupDelay);
     }
 
     int data;
     unsigned char byte;
-
-    // Open input
-    int outputfd =0;
     int res;
-    struct termios oldtio,newtio;
-
-    if (serialMode) {
-      if (verbose) printf("Opening serial connection to %s\n",outputname);
-
-      outputfd = open(outputname, O_RDWR | O_NOCTTY);
-      if (outputfd <0) {
-        perror(outputname); exit(-1);
-      }
-      tcgetattr(outputfd,&oldtio); // save current port settings
-
-      // see "man termios" for details
-      memset(&newtio, 0, sizeof(newtio));
-      // - baudrate, 8-N-1, no modem control lines (local), reading enabled
-      newtio.c_cflag = baudRateCode | CRTSCTS | CS8 | CLOCAL | CREAD;
-      // - ignore parity errors
-      newtio.c_iflag = IGNPAR;
-      // - no output control
-      newtio.c_oflag = 0;
-      // - no input control (non-canonical)
-      newtio.c_lflag = 0;
-      // - no inter-char time
-      newtio.c_cc[VTIME]    = 0;   /* inter-character timer unused */
-      // - receive every single char seperately
-      newtio.c_cc[VMIN]     = 1;   /* blocking read until 1 chars received */
-      // - set new params
-      tcflush(outputfd, TCIFLUSH);
-      tcsetattr(outputfd,TCSANOW,&newtio);
-    }
-    else {
-      if (verbose) printf("Opening TCP connection to %s\n",outputname);
-      // assume it's an IP address or hostname
-      struct sockaddr_in conn_addr;
-      if ((outputfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-        printf("Error: Could not create socket\n");
-        exit(1);
-      }
-      // prepare IP address
-      memset(&conn_addr, '0', sizeof(conn_addr));
-      conn_addr.sin_family = AF_INET;
-      conn_addr.sin_port = htons(connPort);
-
-      struct hostent *server;
-      server = gethostbyname(outputname);
-      if (server == NULL) {
-        printf("Error: no such host");
-        exit(1);
-      }
-      memcpy((char *)&conn_addr.sin_addr.s_addr, (char *)server->h_addr, server->h_length);
-
-      if ((res = connect(outputfd, (struct sockaddr *)&conn_addr, sizeof(conn_addr))) < 0) {
-        printf("Error: %s\n", strerror(errno));
-        exit(1);
-      }
-    }
 
     if (proxyMode) {
 
@@ -282,14 +314,16 @@ int main(int argc, char **argv)
 
       listen(listenfd, 1); // max one connection for now
 
-      if (verbose) printf("Proxy mode, listening on port %d for connections\n",proxyPort);
+      if (verbose) printf("Proxy mode, listening on port %d for incoming connections\n",proxyPort);
 
       int terminated = FALSE;
       while (!terminated) {
-        if (verbose) printf("Waiting for new connection...\n");
+        if (verbose) printf("Waiting for new incoming connection...\n");
         // accept the connection, open fd
         servingfd = accept(listenfd, (struct sockaddr*)NULL, NULL);
         if (verbose) printf("Accepted connection\n");
+        // open outgoing connection now
+        openOutgoing();
         // wait for getting data from either side now
         while (TRUE) {
           // prepare fd observation using select()
@@ -309,12 +343,12 @@ int main(int argc, char **argv)
           }
           if (FD_ISSET(servingfd,&errorfs)) {
             // error occurred on served connection
-            if (verbose) printf("Error on served connection %s -> disconnect\n", strerror(errno));
+            if (verbose) printf("Error on incoming connection %s -> disconnect\n", strerror(errno));
             break;
           }
           if (FD_ISSET(outputfd,&errorfs)) {
             // error occurred on served connection
-            if (verbose) printf("Error on serial/TCP client connection %s -> aborting\n", strerror(errno));
+            if (verbose) printf("Error on outgoing connection %s -> aborting\n", strerror(errno));
             terminated = TRUE;
             break;
           }
@@ -347,12 +381,12 @@ int main(int argc, char **argv)
             // - get number of bytes available
             n = ioctl(outputfd, FIONREAD, &numBytes);
             if (n<0) {
-              if (verbose) printf("ioctl FIONREAD error %s -> aborting\n", strerror(errno));
+              if (verbose) printf("ioctl FIONREAD error on outgoing connection %s -> aborting\n", strerror(errno));
               terminated = TRUE;
               break;
             }
             if (numBytes<=0) {
-              if (verbose) printf("ioctl FIONREAD indicates 0 bytes ready -> aborting\n");
+              if (verbose) printf("ioctl FIONREAD indicates 0 bytes ready on outgoing connection -> aborting\n");
               terminated = TRUE;
               break;
             }
@@ -364,12 +398,12 @@ int main(int argc, char **argv)
             if (numBytes>0)
               gotBytes = read(outputfd,buffer,numBytes); // read available bytes
             if (gotBytes<0) {
-              if (verbose) printf("read error %s -> aborting\n", strerror(errno));
+              if (verbose) printf("read error on outgoing connection %s -> aborting\n", strerror(errno));
               terminated = TRUE;
               break;
             }
             if (gotBytes<1) {
-              if (verbose) printf("read returns 0 bytes -> keep waiting\n");
+              if (verbose) printf("read  on outgoing connection returns 0 bytes -> keep waiting\n");
               continue;
             }
             // got bytes, send them
@@ -385,11 +419,13 @@ int main(int argc, char **argv)
           }
         }
         close(servingfd);
-        if (verbose) printf("Connection closed, waiting for new connection\n");
+        closeOutgoing();
+        if (verbose) printf("Incoming connection was closed, waiting for new connection\n");
       }
     }
     else {
       // command line direct mode
+      openOutgoing();
       int numRespBytes = 0;
       if (strcmp(argv[optind],"INF")==0) {
         // wait indefinitely
@@ -424,16 +460,8 @@ int main(int argc, char **argv)
         if (verbose) printf("Received     byte : 0x%02X\n",byte);
         numRespBytes--;
       }
+      closeOutgoing();
     }
-
-    // done
-    if (serialMode) {
-      tcsetattr(outputfd,TCSANOW,&oldtio);
-    }
-
-    // close
-    close(outputfd);
-
   } while (proxyMode);
 
   // return

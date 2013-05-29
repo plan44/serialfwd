@@ -130,8 +130,6 @@ void openOutgoing()
       tcgetattr(outputfd,&oldtio); // save current port settings
       // see "man termios" for details
       memset(&newtio, 0, sizeof(newtio));
-      // - set speed
-      cfsetspeed(&newtio, baudRateCode);
       // - 8-N-1, no modem control lines (local), reading enabled
       newtio.c_cflag = CS8 | CLOCAL | CREAD;
       // - ignore parity errors
@@ -144,6 +142,8 @@ void openOutgoing()
       newtio.c_cc[VTIME]    = 0;   /* inter-character timer unused */
       // - receive every single char seperately
       newtio.c_cc[VMIN]     = 1;   /* blocking read until 1 chars received */
+      // - set speed (as this ors into c_cflag, this must be after setting c_cflag initial value)
+      cfsetspeed(&newtio, baudRateCode);
       // - set new params
       tcflush(outputfd, TCIFLUSH);
       tcsetattr(outputfd,TCSANOW,&newtio);

@@ -19,16 +19,16 @@
 <folderInfo id="com.digi.lxnetes.managedbuild.debugConfiguration.100236078." name="/" resourcePath="">
 <toolChain id="com.digi.lxnetes.managedbuild.toolChainDebug.112950810" name="Digi EL Tool Chain" superClass="com.digi.lxnetes.managedbuild.toolChainDebug">
 <targetPlatform id="com.digi.lxnetes.managedbuild.targetPlatform.debug.985702059" name="Debug Platform" superClass="com.digi.lxnetes.managedbuild.targetPlatform.debug"/>
-<builder buildPath="${workspace_loc:/serialfwd/Debug}" id="com.digi.lxnetes.builder.exe.debug.790968753" managedBuildOn="true" name="Gnu Make Builder.Debug" superClass="com.digi.lxnetes.builder.exe.debug"/>
+<builder buildPath="${workspace_loc:/serialfwd/Debug}" id="com.digi.lxnetes.builder.exe.debug.790968753" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="Gnu Make Builder" superClass="com.digi.lxnetes.builder.exe.debug"/>
 <tool id="com.digi.lxnetes.managedbuild.archiver.base.894471610" name="GCC C Cross-Archiver" superClass="com.digi.lxnetes.managedbuild.archiver.base"/>
 <tool id="com.digi.lxnetes.managedbuild.c.compiler.debug.1641403664" name="GCC C Cross-Compiler" superClass="com.digi.lxnetes.managedbuild.c.compiler.debug">
-<option defaultValue="gnu.c.optimization.level.none" id="gnu.c.compiler.option.optimization.level.692512744" superClass="gnu.c.compiler.option.optimization.level" valueType="enumerated"/>
-<option id="gnu.c.compiler.option.debugging.level.289091923" superClass="gnu.c.compiler.option.debugging.level" value="gnu.c.debugging.level.max" valueType="enumerated"/>
+<option defaultValue="gnu.c.optimization.level.none" id="gnu.c.compiler.option.optimization.level.692512744" name="Optimization Level" superClass="gnu.c.compiler.option.optimization.level" valueType="enumerated"/>
+<option id="gnu.c.compiler.option.debugging.level.289091923" name="Debug Level" superClass="gnu.c.compiler.option.debugging.level" value="gnu.c.debugging.level.max" valueType="enumerated"/>
 <inputType id="com.digi.lxnetes.managedbuild.c.compiler.input.1635271144" superClass="com.digi.lxnetes.managedbuild.c.compiler.input"/>
 </tool>
 <tool id="com.digi.lxnetes.managedbuild.cpp.compiler.debug.661227966" name="GCC C++ Cross-Compiler" superClass="com.digi.lxnetes.managedbuild.cpp.compiler.debug">
-<option id="gnu.cpp.compiler.option.optimization.level.247774315" superClass="gnu.cpp.compiler.option.optimization.level" value="gnu.cpp.compiler.optimization.level.none" valueType="enumerated"/>
-<option id="gnu.cpp.compiler.option.debugging.level.254811728" superClass="gnu.cpp.compiler.option.debugging.level" value="gnu.cpp.compiler.debugging.level.max" valueType="enumerated"/>
+<option id="gnu.cpp.compiler.option.optimization.level.247774315" name="Optimization Level" superClass="gnu.cpp.compiler.option.optimization.level" value="gnu.cpp.compiler.optimization.level.none" valueType="enumerated"/>
+<option id="gnu.cpp.compiler.option.debugging.level.254811728" name="Debug Level" superClass="gnu.cpp.compiler.option.debugging.level" value="gnu.cpp.compiler.debugging.level.max" valueType="enumerated"/>
 </tool>
 <tool id="com.digi.lxnetes.managedbuild.c.linker.debug.544455080" name="GCC C Cross-Linker" superClass="com.digi.lxnetes.managedbuild.c.linker.debug">
 <inputType id="cdt.managedbuild.tool.gnu.c.linker.input.825104607" superClass="cdt.managedbuild.tool.gnu.c.linker.input">
@@ -461,16 +461,16 @@
 <folderInfo id="com.digi.lxnetes.managedbuild.realeaseConfiguration.1503279785." name="/" resourcePath="">
 <toolChain id="com.digi.lxnetes.managedbuild.toolChainRelease.1937521211" name="Digi EL Tool Chain" superClass="com.digi.lxnetes.managedbuild.toolChainRelease">
 <targetPlatform id="com.digi.lxnetes.managedbuild.targetPlatform.release.596148553" name="Debug Platform" superClass="com.digi.lxnetes.managedbuild.targetPlatform.release"/>
-<builder buildPath="${workspace_loc:/serialfwd/Release}" id="com.digi.lxnetes.builder.exe.release.1202415382" managedBuildOn="true" name="Gnu Make Builder.Release" superClass="com.digi.lxnetes.builder.exe.release"/>
+<builder buildPath="${workspace_loc:/serialfwd/Release}" id="com.digi.lxnetes.builder.exe.release.1202415382" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="Gnu Make Builder" superClass="com.digi.lxnetes.builder.exe.release"/>
 <tool id="com.digi.lxnetes.managedbuild.archiver.base.1906069817" name="GCC C Cross-Archiver" superClass="com.digi.lxnetes.managedbuild.archiver.base"/>
 <tool id="com.digi.lxnetes.managedbuild.c.compiler.release.2005444046" name="GCC C Cross-Compiler" superClass="com.digi.lxnetes.managedbuild.c.compiler.release">
-<option defaultValue="gnu.c.optimization.level.most" id="gnu.c.compiler.option.optimization.level.1967970572" superClass="gnu.c.compiler.option.optimization.level" valueType="enumerated"/>
-<option id="gnu.c.compiler.option.debugging.level.1639906568" superClass="gnu.c.compiler.option.debugging.level" value="gnu.c.debugging.level.none" valueType="enumerated"/>
+<option defaultValue="gnu.c.optimization.level.most" id="gnu.c.compiler.option.optimization.level.1967970572" name="Optimization Level" superClass="gnu.c.compiler.option.optimization.level" value="gnu.c.optimization.level.more" valueType="enumerated"/>
+<option id="gnu.c.compiler.option.debugging.level.1639906568" name="Debug Level" superClass="gnu.c.compiler.option.debugging.level" value="gnu.c.debugging.level.none" valueType="enumerated"/>
 <inputType id="com.digi.lxnetes.managedbuild.c.compiler.input.1765600777" superClass="com.digi.lxnetes.managedbuild.c.compiler.input"/>
 </tool>
 <tool id="com.digi.lxnetes.managedbuild.cpp.compiler.release.1649944141" name="GCC C++ Cross-Compiler" superClass="com.digi.lxnetes.managedbuild.cpp.compiler.release">
-<option id="gnu.cpp.compiler.option.optimization.level.1209497384" superClass="gnu.cpp.compiler.option.optimization.level" value="gnu.cpp.compiler.optimization.level.most" valueType="enumerated"/>
-<option id="gnu.cpp.compiler.option.debugging.level.743375995" superClass="gnu.cpp.compiler.option.debugging.level" value="gnu.cpp.compiler.debugging.level.none" valueType="enumerated"/>
+<option id="gnu.cpp.compiler.option.optimization.level.1209497384" name="Optimization Level" superClass="gnu.cpp.compiler.option.optimization.level" value="gnu.cpp.compiler.optimization.level.most" valueType="enumerated"/>
+<option id="gnu.cpp.compiler.option.debugging.level.743375995" name="Debug Level" superClass="gnu.cpp.compiler.option.debugging.level" value="gnu.cpp.compiler.debugging.level.none" valueType="enumerated"/>
 </tool>
 <tool id="com.digi.lxnetes.managedbuild.c.linker.release.1750504815" name="GCC C Cross-Linker" superClass="com.digi.lxnetes.managedbuild.c.linker.release">
 <inputType id="cdt.managedbuild.tool.gnu.c.linker.input.1398856707" superClass="cdt.managedbuild.tool.gnu.c.linker.input">
@@ -885,6 +885,7 @@
 </profile>
 </scannerConfigBuildInfo>
 </storageModule>
+<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
 </cconfiguration>
 </storageModule>
 <storageModule moduleId="cdtBuildSystem" version="4.0.0">

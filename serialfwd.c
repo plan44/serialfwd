@@ -51,6 +51,7 @@ static void usage(char *name)
   fprintf(stderr, "    -P port : port to connect to (default: %d)\n", DEFAULT_CONNECTIONPORT);
   fprintf(stderr, "    -b baudrate : baudrate when connecting to serial port (default: %d)\n", DEFAULT_BAUDRATE);
   fprintf(stderr, "    -w seconds : number of seconds to wait before (re)opening connections (default: 0)\n");
+  fprintf(stderr, "    -W seconds : number of seconds to wait before sending after opening connection (default: 0)\n");
 }
 
 
@@ -106,6 +107,7 @@ int proxyPort = DEFAULT_PROXYPORT;
 int connPort = DEFAULT_CONNECTIONPORT;
 int baudRate = DEFAULT_BAUDRATE;
 int startupDelay = 0;
+int sendDelay = 0;
 
 // outgoing connection
 int outputfd = -1;
@@ -205,7 +207,7 @@ int main(int argc, char **argv)
   }
 
   int c;
-  while ((c = getopt(argc, argv, "hdp:P:b:w:")) != -1)
+  while ((c = getopt(argc, argv, "hdp:P:b:w:W:")) != -1)
   {
     switch (c) {
       case 'h':
@@ -226,6 +228,9 @@ int main(int argc, char **argv)
         break;
       case 'w':
         startupDelay = atoi(optarg);
+        break;
+      case 'W':
+        sendDelay = atoi(optarg);
         break;
       default:
         exit(-1);
@@ -437,6 +442,11 @@ int main(int argc, char **argv)
         sscanf(argv[optind],"%d",&numRespBytes);
       }
       optind++;
+      // wait before start sending?
+      if (sendDelay>0) {
+        if (verbose) printf("Waiting %d seconds before starting to send\n", sendDelay);
+        sleep(sendDelay);
+      }
       // parse and send the input bytes
       for (argIdx=optind; argIdx<argc; argIdx++) {
         // parse as hex

@@ -52,6 +52,7 @@ static void usage(char *name)
   fprintf(stderr, "    -b baudrate : baudrate when connecting to serial port (default: %d)\n", DEFAULT_BAUDRATE);
   fprintf(stderr, "    -w seconds : number of seconds to wait before (re)opening connections (default: 0)\n");
   fprintf(stderr, "    -W seconds : number of seconds to wait before sending after opening connection (default: 0)\n");
+  fprintf(stderr, "    -D : activate DTR when connection opens, deactivate before closing\n");
 }
 
 
@@ -102,6 +103,7 @@ char *outputname = NULL;
 int proxyMode = FALSE;
 int daemonMode = FALSE;
 int serialMode = FALSE;
+int controlDTR = FALSE;
 int verbose = TRUE;
 int proxyPort = DEFAULT_PROXYPORT;
 int connPort = DEFAULT_CONNECTIONPORT;
@@ -149,6 +151,11 @@ void openOutgoing()
       // - set new params
       tcflush(outputfd, TCIFLUSH);
       tcsetattr(outputfd,TCSANOW,&newtio);
+      // - set DTR if requested
+      if (controlDTR) {
+        int controlbits = TIOCM_DTR;
+        ioctl(outputfd, (TIOCMBIS), &controlbits);
+      }
     }
     else {
       if (verbose) printf("Opening outgoing TCP connection to %s\n",outputname);
@@ -185,6 +192,12 @@ void closeOutgoing()
   if (outputfd>=0) {
     if (serialMode) {
       if (verbose) printf("Closing outgoing serial connection to %s\n",outputname);
+      // - clear DTR if requested
+      if (controlDTR) {
+        int controlbits = TIOCM_DTR;
+        ioctl(outputfd, (TIOCMBIC), &controlbits);
+      }
+      // restore settings
       tcsetattr(outputfd,TCSANOW,&oldtio);
     }
     else {
@@ -207,7 +220,7 @@ int main(int argc, char **argv)
   }
 
   int c;
-  while ((c = getopt(argc, argv, "hdp:P:b:w:W:")) != -1)
+  while ((c = getopt(argc, argv, "hdDp:P:b:w:W:")) != -1)
   {
     switch (c) {
       case 'h':
@@ -216,6 +229,9 @@ int main(int argc, char **argv)
       case 'd':
         daemonMode = TRUE;
         verbose = FALSE;
+        break;
+      case 'D':
+        controlDTR = TRUE;
         break;
       case 'p':
         proxyPort = atoi(optarg);
@@ -330,6 +346,11 @@ int main(int argc, char **argv)
         if (verbose) printf("Accepted connection\n");
         // open outgoing connection now
         openOutgoing();
+        // wait before start sending?
+        if (sendDelay>0) {
+          if (verbose) printf("Waiting %d seconds before starting to send\n", sendDelay);
+          sleep(sendDelay);
+        }
         // wait for getting data from either side now
         while (TRUE) {
           // prepare fd observation using select()

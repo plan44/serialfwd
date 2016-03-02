@@ -53,6 +53,8 @@ static void usage(char *name)
   fprintf(stderr, "    -w seconds : number of seconds to wait before (re)opening connections (default: 0)\n");
   fprintf(stderr, "    -W seconds : number of seconds to wait before sending after opening connection (default: 0)\n");
   fprintf(stderr, "    -D : activate DTR when connection opens, deactivate before closing\n");
+  fprintf(stderr, "    -r : clear RTS when connection opens\n");
+  fprintf(stderr, "    -R : set RTS when connection opens\n");
 }
 
 
@@ -104,6 +106,8 @@ int proxyMode = FALSE;
 int daemonMode = FALSE;
 int serialMode = FALSE;
 int controlDTR = FALSE;
+int clearRTS = FALSE;
+int setRTS = FALSE;
 int verbose = TRUE;
 int proxyPort = DEFAULT_PROXYPORT;
 int connPort = DEFAULT_CONNECTIONPORT;
@@ -154,6 +158,15 @@ void openOutgoing()
       // - set DTR if requested
       if (controlDTR) {
         int controlbits = TIOCM_DTR;
+        ioctl(outputfd, (TIOCMBIS), &controlbits);
+      }
+      // - set or clear CTS
+      if (clearRTS) {
+        int controlbits = TIOCM_RTS;
+        ioctl(outputfd, (TIOCMBIC), &controlbits);
+      }
+      else if (setRTS) {
+        int controlbits = TIOCM_RTS;
         ioctl(outputfd, (TIOCMBIS), &controlbits);
       }
     }
@@ -220,7 +233,7 @@ int main(int argc, char **argv)
   }
 
   int c;
-  while ((c = getopt(argc, argv, "hdDp:P:b:w:W:")) != -1)
+  while ((c = getopt(argc, argv, "hdDrRp:P:b:w:W:")) != -1)
   {
     switch (c) {
       case 'h':
@@ -232,6 +245,12 @@ int main(int argc, char **argv)
         break;
       case 'D':
         controlDTR = TRUE;
+        break;
+      case 'r':
+        clearRTS = TRUE;
+        break;
+      case 'R':
+        setRTS = TRUE;
         break;
       case 'p':
         proxyPort = atoi(optarg);

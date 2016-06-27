@@ -31,6 +31,7 @@
 <option id="gnu.cpp.compiler.option.debugging.level.254811728" name="Debug Level" superClass="gnu.cpp.compiler.option.debugging.level" value="gnu.cpp.compiler.debugging.level.max" valueType="enumerated"/>
 </tool>
 <tool id="com.digi.lxnetes.managedbuild.c.linker.debug.544455080" name="GCC C Cross-Linker" superClass="com.digi.lxnetes.managedbuild.c.linker.debug">
+<option id="gnu.c.link.option.strip.182996754" superClass="gnu.c.link.option.strip" value="true" valueType="boolean"/>
 <inputType id="cdt.managedbuild.tool.gnu.c.linker.input.825104607" superClass="cdt.managedbuild.tool.gnu.c.linker.input">
 <additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
 <additionalInput kind="additionalinput" paths="$(LIBS)"/>
@@ -473,6 +474,7 @@
 <option id="gnu.cpp.compiler.option.debugging.level.743375995" name="Debug Level" superClass="gnu.cpp.compiler.option.debugging.level" value="gnu.cpp.compiler.debugging.level.none" valueType="enumerated"/>
 </tool>
 <tool id="com.digi.lxnetes.managedbuild.c.linker.release.1750504815" name="GCC C Cross-Linker" superClass="com.digi.lxnetes.managedbuild.c.linker.release">
+<option id="gnu.c.link.option.strip.14736816" name="Omit all symbol information (-s)" superClass="gnu.c.link.option.strip" value="true" valueType="boolean"/>
 <inputType id="cdt.managedbuild.tool.gnu.c.linker.input.1398856707" superClass="cdt.managedbuild.tool.gnu.c.linker.input">
 <additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
 <additionalInput kind="additionalinput" paths="$(LIBS)"/>

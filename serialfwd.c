@@ -12,6 +12,7 @@
 #include <termios.h>
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/select.h>
@@ -35,7 +36,9 @@ volatile int STOP=FALSE;
 #define DEFAULT_PROXYPORT 2101
 #define DEFAULT_CONNECTIONPORT 2101
 #define DEFAULT_BAUDRATE 9600
-
+#define DEFAULT_CHARSIZE 8
+#define DEFAULT_STOPBITS 1
+#define DEFAULT_PARITY 'N'
 
 static void usage(char *name)
 {
@@ -50,6 +53,10 @@ static void usage(char *name)
   fprintf(stderr, "    -p servingport : port to accept connections from (default: %d)\n", DEFAULT_PROXYPORT);
   fprintf(stderr, "    -P port : port to connect to (default: %d)\n", DEFAULT_CONNECTIONPORT);
   fprintf(stderr, "    -b baudrate : baudrate when connecting to serial port (default: %d)\n", DEFAULT_BAUDRATE);
+  fprintf(stderr, "    -c charsize : char size 5,6,7 or 8 (default: %d)\n", DEFAULT_CHARSIZE);
+  fprintf(stderr, "    -y parity : N=none, O=odd, E=even (default: %c)\n", DEFAULT_PARITY);
+  fprintf(stderr, "    -2 : two stop bits (default: %d stop bit)\n", DEFAULT_STOPBITS);
+  fprintf(stderr, "    -t : text output (instead of hex bytes)\n");
   fprintf(stderr, "    -w seconds : number of seconds to wait before (re)opening connections (default: 0)\n");
   fprintf(stderr, "    -W seconds : number of seconds to wait before sending after opening connection (default: 0)\n");
   fprintf(stderr, "    -D : activate DTR when connection opens, deactivate before closing\n");
@@ -112,6 +119,10 @@ int verbose = TRUE;
 int proxyPort = DEFAULT_PROXYPORT;
 int connPort = DEFAULT_CONNECTIONPORT;
 int baudRate = DEFAULT_BAUDRATE;
+int charSize = DEFAULT_CHARSIZE;
+int stopBits = DEFAULT_STOPBITS;
+char parity = DEFAULT_PARITY;
+int textOutput = 0;
 int startupDelay = 0;
 int sendDelay = 0;
 
@@ -130,16 +141,21 @@ void openOutgoing()
 
     if (serialMode) {
       if (verbose) printf("Opening outgoing serial connection to %s\n",outputname);
-
       outputfd = open(outputname, O_RDWR | O_NOCTTY);
       if (outputfd <0) {
         perror(outputname); exit(-1);
       }
+      if (verbose>1) printf("Getting current options\n");
       tcgetattr(outputfd,&oldtio); // save current port settings
       // see "man termios" for details
       memset(&newtio, 0, sizeof(newtio));
-      // - 8-N-1, no modem control lines (local), reading enabled
-      newtio.c_cflag = CS8 | CLOCAL | CREAD;
+      // - charsize, stopbits, parity, no modem control lines (local), reading enabled
+      newtio.c_cflag =
+        (charSize==7 ? CS7 : (charSize==6 ? CS6 : (charSize==5 ? CS5 : CS8))) |
+        (stopBits==2 ? CSTOPB : 0) |
+        (parity!='N' ? (PARENB | (parity=='O' ? PARODD : 0)) : 0) |
+        CLOCAL |
+        CREAD;
       // - ignore parity errors
       newtio.c_iflag = IGNPAR;
       // - no output control
@@ -151,9 +167,12 @@ void openOutgoing()
       // - receive every single char seperately
       newtio.c_cc[VMIN]     = 1;   /* blocking read until 1 chars received */
       // - set speed (as this ors into c_cflag, this must be after setting c_cflag initial value)
+      if (verbose>1) printf("Setting baud rate\n");
       cfsetspeed(&newtio, baudRateCode);
       // - set new params
+      if (verbose>1) printf("flushing output\n");
       tcflush(outputfd, TCIFLUSH);
+      if (verbose>1) printf("setting tio\n");
       tcsetattr(outputfd,TCSANOW,&newtio);
       // - set DTR if requested
       if (controlDTR) {
@@ -169,6 +188,7 @@ void openOutgoing()
         int controlbits = TIOCM_RTS;
         ioctl(outputfd, (TIOCMBIS), &controlbits);
       }
+      if (verbose) printf("Serial interface ready\n");
     }
     else {
       if (verbose) printf("Opening outgoing TCP connection to %s\n",outputname);
@@ -233,7 +253,7 @@ int main(int argc, char **argv)
   }
 
   int c;
-  while ((c = getopt(argc, argv, "hdDrRp:P:b:w:W:")) != -1)
+  while ((c = getopt(argc, argv, "hdDrRp:P:b:c:2y:tw:W:")) != -1)
   {
     switch (c) {
       case 'h':
@@ -260,6 +280,18 @@ int main(int argc, char **argv)
         break;
       case 'b':
         baudRate = atoi(optarg);
+        break;
+      case 'c':
+        charSize = atoi(optarg);
+        break;
+      case '2':
+        stopBits = 2;
+        break;
+      case 'y':
+        parity = toupper(*optarg);
+        break;
+      case 't':
+        textOutput = TRUE;
         break;
       case 'w':
         startupDelay = atoi(optarg);
@@ -508,7 +540,15 @@ int main(int argc, char **argv)
           if (verbose) printf("connection was closed, nothing to read any more -> aborting\n");
           break;
         }
-        if (verbose) printf("Received     byte : 0x%02X\n",byte);
+        if (verbose) {
+          if (textOutput) {
+            fputc(byte, stdout);
+            fflush(stdout);
+          }
+          else {
+            printf("Received     byte : 0x%02X\n",byte);
+          }
+        }
         numRespBytes--;
       }
       closeOutgoing();

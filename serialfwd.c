@@ -43,15 +43,16 @@ volatile int STOP=FALSE;
 static void usage(char *name)
 {
   fprintf(stderr, "usage:\n");
-  fprintf(stderr, "  %s [-P port] [-b baudrate] (serialportdevice|ipaddr) answerbytes [hex [hex...]]\n", name);
+  fprintf(stderr, "  %s [options] (serialportdevice|ipaddr) answerbytes [hex [hex...]]\n", name);
   fprintf(stderr, "    sends specified hex bytes and then waits for specified number of answer bytes\n");
   fprintf(stderr, "    (answerbytes == INF: wait forever, use Ctrl-C to abort)\n");
-  fprintf(stderr, "    -P port : port to connect to (default: %d)\n", DEFAULT_CONNECTIONPORT);
-  fprintf(stderr, "  %s [-d] [-p servingport] [-P port] [-b baudrate] (serialportdevice|ipaddr)\n", name);
+  fprintf(stderr, "  %s [-d] [-p servingport] [options] (serialportdevice|ipaddr)\n", name);
   fprintf(stderr, "    proxy mode: accepts TCP connection and forwards to/from serial/ipaddr\n");
   fprintf(stderr, "    -d : fully daemonize and suppress showing byte transfer messages on stdout\n");
   fprintf(stderr, "    -p servingport : port to accept connections from (default: %d)\n", DEFAULT_PROXYPORT);
+  fprintf(stderr, "  General options:\n");
   fprintf(stderr, "    -P port : port to connect to (default: %d)\n", DEFAULT_CONNECTIONPORT);
+  fprintf(stderr, "    -n : do not configure serial params (just open device and use it)\n");
   fprintf(stderr, "    -b baudrate : baudrate when connecting to serial port (default: %d)\n", DEFAULT_BAUDRATE);
   fprintf(stderr, "    -c charsize : char size 5,6,7 or 8 (default: %d)\n", DEFAULT_CHARSIZE);
   fprintf(stderr, "    -y parity : N=none, O=odd, E=even (default: %c)\n", DEFAULT_PARITY);
@@ -116,6 +117,7 @@ int controlDTR = FALSE;
 int clearRTS = FALSE;
 int setRTS = FALSE;
 int verbose = TRUE;
+int tioconfig = TRUE;
 int proxyPort = DEFAULT_PROXYPORT;
 int connPort = DEFAULT_CONNECTIONPORT;
 int baudRate = DEFAULT_BAUDRATE;
@@ -145,50 +147,52 @@ void openOutgoing()
       if (outputfd <0) {
         perror(outputname); exit(-1);
       }
-      if (verbose>1) printf("Getting current options\n");
-      tcgetattr(outputfd,&oldtio); // save current port settings
-      // see "man termios" for details
-      memset(&newtio, 0, sizeof(newtio));
-      // - charsize, stopbits, parity, no modem control lines (local), reading enabled
-      newtio.c_cflag =
-        (charSize==7 ? CS7 : (charSize==6 ? CS6 : (charSize==5 ? CS5 : CS8))) |
-        (stopBits==2 ? CSTOPB : 0) |
-        (parity!='N' ? (PARENB | (parity=='O' ? PARODD : 0)) : 0) |
-        CLOCAL |
-        CREAD;
-      // - ignore parity errors
-      newtio.c_iflag = IGNPAR;
-      // - no output control
-      newtio.c_oflag = 0;
-      // - no input control (non-canonical)
-      newtio.c_lflag = 0;
-      // - no inter-char time
-      newtio.c_cc[VTIME]    = 0;   /* inter-character timer unused */
-      // - receive every single char seperately
-      newtio.c_cc[VMIN]     = 1;   /* blocking read until 1 chars received */
-      // - set speed (as this ors into c_cflag, this must be after setting c_cflag initial value)
-      if (verbose>1) printf("Setting baud rate\n");
-      cfsetspeed(&newtio, baudRateCode);
-      // - set new params
-      if (verbose>1) printf("flushing output\n");
-      tcflush(outputfd, TCIFLUSH);
-      if (verbose>1) printf("setting tio\n");
-      tcsetattr(outputfd,TCSANOW,&newtio);
-      // - set DTR if requested
-      if (controlDTR) {
-        int controlbits = TIOCM_DTR;
-        ioctl(outputfd, (TIOCMBIS), &controlbits);
+      if (tioconfig) {
+        if (verbose>1) printf("Getting current tio options\n");
+        tcgetattr(outputfd,&oldtio); // save current port settings
+        // see "man termios" for details
+        memset(&newtio, 0, sizeof(newtio));
+        // - charsize, stopbits, parity, no modem control lines (local), reading enabled
+        newtio.c_cflag =
+          (charSize==7 ? CS7 : (charSize==6 ? CS6 : (charSize==5 ? CS5 : CS8))) |
+          (stopBits==2 ? CSTOPB : 0) |
+          (parity!='N' ? (PARENB | (parity=='O' ? PARODD : 0)) : 0) |
+          CLOCAL |
+          CREAD;
+        // - ignore parity errors
+        newtio.c_iflag = IGNPAR;
+        // - no output control
+        newtio.c_oflag = 0;
+        // - no input control (non-canonical)
+        newtio.c_lflag = 0;
+        // - no inter-char time
+        newtio.c_cc[VTIME]    = 0;   /* inter-character timer unused */
+        // - receive every single char seperately
+        newtio.c_cc[VMIN]     = 1;   /* blocking read until 1 chars received */
+        // - set speed (as this ors into c_cflag, this must be after setting c_cflag initial value)
+        if (verbose>1) printf("Setting baud rate\n");
+        cfsetspeed(&newtio, baudRateCode);
+        // - set new params
+        if (verbose>1) printf("flushing output\n");
+        tcflush(outputfd, TCIFLUSH);
+        if (verbose>1) printf("setting tio\n");
+        tcsetattr(outputfd,TCSANOW,&newtio);
+        // - set DTR if requested
+        if (controlDTR) {
+          int controlbits = TIOCM_DTR;
+          ioctl(outputfd, (TIOCMBIS), &controlbits);
+        }
+        // - set or clear CTS
+        if (clearRTS) {
+          int controlbits = TIOCM_RTS;
+          ioctl(outputfd, (TIOCMBIC), &controlbits);
+        }
+        else if (setRTS) {
+          int controlbits = TIOCM_RTS;
+          ioctl(outputfd, (TIOCMBIS), &controlbits);
+        }
+        if (verbose) printf("Serial interface ready\n");
       }
-      // - set or clear CTS
-      if (clearRTS) {
-        int controlbits = TIOCM_RTS;
-        ioctl(outputfd, (TIOCMBIC), &controlbits);
-      }
-      else if (setRTS) {
-        int controlbits = TIOCM_RTS;
-        ioctl(outputfd, (TIOCMBIS), &controlbits);
-      }
-      if (verbose) printf("Serial interface ready\n");
     }
     else {
       if (verbose) printf("Opening outgoing TCP connection to %s\n",outputname);
@@ -225,13 +229,15 @@ void closeOutgoing()
   if (outputfd>=0) {
     if (serialMode) {
       if (verbose) printf("Closing outgoing serial connection to %s\n",outputname);
-      // - clear DTR if requested
-      if (controlDTR) {
-        int controlbits = TIOCM_DTR;
-        ioctl(outputfd, (TIOCMBIC), &controlbits);
+      if (tioconfig) {
+        // - clear DTR if requested
+        if (controlDTR) {
+          int controlbits = TIOCM_DTR;
+          ioctl(outputfd, (TIOCMBIC), &controlbits);
+        }
+        // restore settings
+        tcsetattr(outputfd,TCSANOW,&oldtio);
       }
-      // restore settings
-      tcsetattr(outputfd,TCSANOW,&oldtio);
     }
     else {
       if (verbose) printf("Closing outgoing TCP connection to %s\n",outputname);
@@ -253,7 +259,7 @@ int main(int argc, char **argv)
   }
 
   int c;
-  while ((c = getopt(argc, argv, "hdDrRp:P:b:c:2y:tw:W:")) != -1)
+  while ((c = getopt(argc, argv, "hdnDrRp:P:b:c:2y:tw:W:")) != -1)
   {
     switch (c) {
       case 'h':
@@ -262,6 +268,9 @@ int main(int argc, char **argv)
       case 'd':
         daemonMode = TRUE;
         verbose = FALSE;
+        break;
+      case 'n':
+        tioconfig = FALSE;
         break;
       case 'D':
         controlDTR = TRUE;
@@ -313,7 +322,7 @@ int main(int argc, char **argv)
   serialMode = *outputname=='/';
 
   // check type of input
-  if (serialMode) {
+  if (serialMode && tioconfig) {
     // assume it's a serial port
     switch (baudRate) {
       case 50 : baudRateCode = B50; break;

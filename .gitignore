@@ -1,8 +1,16 @@
 *~
 
+!/.gitignore
+
+# built binary
+/serialfwd
+
 # DigiESP/Eclipse CDT specifics
 Debug/
 Release/
+!.project
+!.cproject
+!.settings
 
 # Automake build specifics
 build/
@@ -18,6 +26,8 @@ Makefile.in
 autom4te.cache/
 aclocal.m4
 config.h.in
+config.h
+config.rpath
 config.log
 config.status
 configure
@@ -25,3 +35,12 @@ configure_aux/
 .dirstamp
 .deps/
 stamp-h1
+
+# Openwrt build specifics
+/.*
+.pkgdir
+ipkg-mipsel_24kc
+NEWS
+ChangeLog
+ABOUT-NLS
+

@@ -157,7 +157,7 @@ void openOutgoing()
 
     if (serialMode) {
       if (verbose) printf("Opening outgoing serial connection to %s\n",outputname);
-      outputfd = open(outputname, O_RDWR | O_NOCTTY);
+      outputfd = open(outputname, O_RDWR|O_NOCTTY);
       if (outputfd <0) {
         perror(outputname); exit(-1);
       }
@@ -397,6 +397,7 @@ int main(int argc, char **argv)
       int numBytes;
       int gotBytes;
       int i;
+      int flags;
 
       int n;
 
@@ -421,6 +422,9 @@ int main(int argc, char **argv)
         if (verbose) printf("Accepted connection\n");
         // open outgoing connection now
         openOutgoing();
+        // - make non-blocking
+        if ((flags = fcntl(outputfd, F_GETFL, 0))==-1) flags = 0;
+        fcntl(outputfd, F_SETFL, flags|O_NONBLOCK);
         // wait before start sending?
         if (sendDelay>0) {
           if (verbose) printf("Waiting %d seconds before starting to send\n", sendDelay);
@@ -487,18 +491,30 @@ int main(int argc, char **argv)
               terminated = TRUE;
               break;
             }
-            if (numBytes<=0) {
-              if (verbose) printf("ioctl FIONREAD indicates 0 bytes ready on outgoing connection -> aborting\n");
-              terminated = TRUE;
-              break;
-            }
-            // limit to max buffer size
-            if (numBytes>bufsiz)
-              numBytes = bufsiz;
-            // read
             gotBytes = 0;
-            if (numBytes>0)
-              gotBytes = read(outputfd,buffer,numBytes); // read available bytes
+            if (numBytes<=0) {
+              // No bytes ready despite select() reporting
+              // - try reading anyway because some FDs always return 0 for FIONREAD (e.g. Darwin FIFOs)
+              numBytes = bufsiz;
+              gotBytes = read(outputfd, buffer, numBytes); // read until no more available (we opened with O_NONBLOCK)
+              if (gotBytes==0) {
+                // really nothing
+                if (verbose) printf("no bytes ready on outgoing connection -> aborting\n");
+                terminated = TRUE;
+                break;
+              }
+            }
+            else {
+              // We know how many bytes are ready, read those
+              // - but limit to max buffer size
+              if (numBytes>bufsiz) {
+                numBytes = bufsiz;
+              }
+              // read
+              if (numBytes>0) {
+                gotBytes = read(outputfd, buffer, numBytes); // read available bytes
+              }
+            }
             if (gotBytes<0) {
               if (verbose) printf("read error on outgoing connection %s -> aborting\n", strerror(errno));
               terminated = TRUE;

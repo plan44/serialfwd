@@ -487,9 +487,13 @@ int main(int argc, char **argv)
             // - get number of bytes available
             n = ioctl(outputfd, FIONREAD, &numBytes);
             if (n<0) {
-              if (verbose) printf("ioctl FIONREAD error on outgoing connection %s -> aborting\n", strerror(errno));
-              terminated = TRUE;
-              break;
+              if (verbose) printf("ioctl FIONREAD error on outgoing connection %s -> %s\n", strerror(errno), tioconfig ? "aborting" : "ignoring");
+              if (tioconfig) {
+                terminated = TRUE; // treat as error
+                break;
+              }
+              // might be due to device not being tty-ish enough, just read
+              numBytes = 0;
             }
             gotBytes = 0;
             if (numBytes<=0) {
